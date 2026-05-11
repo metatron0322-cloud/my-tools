@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>おこづかい帳</title>
+<title>こづかい帳</title>
 <style>
 :root{
   --bg:#f0f4ff;--surface:#fff;--surface2:#f7f8ff;
@@ -199,7 +199,7 @@ input[type=number].finp::-webkit-inner-spin-button{-webkit-appearance:none;margi
   .mnav{display:flex!important}.fab{display:flex!important}
 }
 .mnav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:6px 0;z-index:50}
-.mni{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px;color:var(--text3);font-size:10px;font-weight:800}
+.mni{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;padding:3px 2px;color:var(--text3);font-size:9px;font-weight:800}
 .mni span{font-size:20px}
 .mni.on{color:var(--accent)}
 .fab{display:none;position:fixed;bottom:66px;right:16px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--pink));color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 6px 20px rgba(99,102,241,.5);align-items:center;justify-content:center;z-index:49;transition:transform .15s}
@@ -563,7 +563,9 @@ function buildNav(){
 
   document.getElementById('mnav').innerHTML=PAGES.map((p,i)=>
     `<div class="mni${p===curPage?' on':''}" data-page="${p}"><span>${PAGE_ICO[i]}</span>${PAGE_LBL[i]}</div>`
-  ).join('');
+  ).join('')+`<div class="mni" id="mnavIncome"><span>💰</span>収入設定</div>`;
+
+  document.getElementById('mnavIncome').onclick=openIncomeModal;
 
   document.querySelectorAll('[data-page]').forEach(el=>{
     el.onclick=()=>{ curPage=el.dataset.page; buildNav(); renderCurrent(); };
