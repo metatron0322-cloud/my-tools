@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)file:///C:/Users/metat/Downloads/my_closet_app.html -->
+<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>My Closet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="./My Closet_files/css2" rel="stylesheet">
+<style>
+:root {
+  --white: #FFFFFF;
+  --off-white: #F7F5F2;
+  --off-white2: #F0EDE8;
+  --border: #E0DDD8;
+  --border-dark: #C8C4BC;
+  --text: #2C2B28;
+  --text-mid: #7A7772;
+  --text-light: #ABA89F;
+  --black: #1A1917;
+  --charcoal: #3D3C39;
+  --accent: #5C5A55;
+  --teal: #4A8C7A;
+  --teal-light: #EAF4F0;
+  --amber-warn: #8C6A2E;
+  --amber-bg: #FDF6E8;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --font-serif: 'Shippori Mincho', serif;
+  --font-sans: 'Noto Sans JP', sans-serif;
+  --shadow: 0 2px 12px rgba(44,43,40,0.08);
+  --shadow-lg: 0 8px 32px rgba(44,43,40,0.12);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: var(--off-white); font-family: var(--font-sans); color: var(--text); }
+
+/* ── layout ── */
+.app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background: var(--off-white); }
+.page { display: none; flex-direction: column; flex: 1; animation: fadeIn .2s ease; }
+.page.active { display: flex; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── header ── */
+.app-header { padding: 20px 20px 0; display: flex; justify-content: space-between; align-items: flex-end; }
+.app-logo { font-family: var(--font-serif); font-size: 22px; font-weight: 500; letter-spacing: .04em; color: var(--black); }
+.app-sub { font-size: 11px; color: var(--text-light); letter-spacing: .06em; margin-top: 2px; }
+.header-count { text-align: right; }
+.hc-num { font-family: var(--font-serif); font-size: 20px; color: var(--text); }
+.hc-label { font-size: 10px; color: var(--text-light); }
+
+/* ── tab bar ── */
+.tab-bar { display: flex; background: var(--white); border-top: 1px solid var(--border); position: sticky; bottom: 0; z-index: 100; padding-bottom: env(safe-area-inset-bottom, 0); }
+.tab { flex: 1; padding: 10px 4px 8px; text-align: center; cursor: pointer; transition: all .15s; border: none; background: none; }
+.tab-icon { font-size: 20px; display: block; }
+.tab-label { font-size: 10px; color: var(--text-light); margin-top: 2px; letter-spacing: .03em; }
+.tab.active .tab-label { color: var(--charcoal); font-weight: 500; }
+.tab.active .tab-icon { filter: saturate(1.2); }
+
+/* ── scroll area ── */
+.scroll-area { flex: 1; overflow-y: auto; padding: 16px 16px 24px; -webkit-overflow-scrolling: touch; }
+
+/* ── capacity bar ── */
+.cap-wrap { background: var(--white); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 14px; border: 1px solid var(--border); }
+.cap-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.cap-title { font-size: 12px; color: var(--text-mid); letter-spacing: .04em; }
+.cap-nums { font-family: var(--font-serif); font-size: 14px; color: var(--text); }
+.cap-track { height: 5px; background: var(--off-white2); border-radius: 3px; }
+.cap-fill { height: 100%; border-radius: 3px; background: var(--teal); transition: width .4s ease; }
+.cap-fill.warn { background: #C8973A; }
+.cap-fill.full { background: #C0524A; }
+
+/* ── week view ── */
+.week-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.week-title { font-family: var(--font-serif); font-size: 16px; color: var(--text); }
+.week-regen { font-size: 12px; color: var(--text-mid); background: var(--white); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; cursor: pointer; }
+.day-strip { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; }
+.day-strip::-webkit-scrollbar { display: none; }
+.day-pill { flex-shrink: 0; width: 44px; text-align: center; padding: 8px 4px; border-radius: var(--radius-md); background: var(--white); border: 1px solid var(--border); cursor: pointer; transition: all .15s; }
+.day-pill.today { background: var(--teal-light); border-color: var(--teal); }
+.day-pill.selected { background: var(--charcoal); border-color: var(--charcoal); }
+.day-pill .dp-day { font-size: 10px; color: var(--text-light); }
+.day-pill .dp-num { font-family: var(--font-serif); font-size: 17px; color: var(--text); margin: 2px 0; }
+.day-pill .dp-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); margin: 0 auto; }
+.day-pill .dp-dot.empty { opacity: 0; }
+.day-pill.selected .dp-day,
+.day-pill.selected .dp-num { color: var(--white); }
+.day-pill.selected .dp-dot { background: var(--off-white2); }
+
+/* ── coord card ── */
+.coord-card { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 16px; margin-bottom: 12px; }
+.cc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.cc-day { font-family: var(--font-serif); font-size: 16px; color: var(--text); }
+.cc-date { font-size: 12px; color: var(--text-light); }
+.cc-items { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+.cc-item { background: var(--off-white); border-radius: var(--radius-sm); padding: 10px 4px 8px; text-align: center; border: 1px solid var(--border); }
+.cc-icon { font-size: 24px; }
+.cc-type { font-size: 9px; color: var(--text-light); margin-top: 2px; letter-spacing: .03em; }
+.cc-name { font-size: 10px; color: var(--text-mid); margin-top: 2px; line-height: 1.3; }
+.cc-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.cc-tag { font-size: 10px; padding: 3px 10px; border-radius: 20px; background: var(--off-white2); color: var(--text-mid); letter-spacing: .03em; border: 1px solid var(--border); }
+.cc-memo { font-size: 12px; color: var(--text-mid); padding: 10px 12px; background: var(--off-white); border-radius: var(--radius-sm); border-left: 2px solid var(--border-dark); line-height: 1.7; font-style: italic; }
+.cc-actions { display: flex; gap: 8px; margin-top: 12px; }
+.btn { padding: 9px 14px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; cursor: pointer; transition: all .15s; border: 1px solid var(--border); background: var(--white); color: var(--text); font-family: var(--font-sans); letter-spacing: .03em; }
+.btn:active { transform: scale(.97); }
+.btn-dark { background: var(--charcoal); color: var(--white); border-color: var(--charcoal); }
+.btn-teal { background: var(--teal); color: var(--white); border-color: var(--teal); }
+.btn-sm { padding: 7px 12px; font-size: 11px; }
+
+/* ── closet ── */
+.cat-scroll { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; }
+.cat-scroll::-webkit-scrollbar { display: none; }
+.cat-pill { flex-shrink: 0; padding: 6px 14px; border-radius: 20px; font-size: 12px; background: var(--white); border: 1px solid var(--border); color: var(--text-mid); cursor: pointer; transition: all .15s; white-space: nowrap; }
+.cat-pill.active { background: var(--charcoal); color: var(--white); border-color: var(--charcoal); }
+.closet-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.ci-card { background: var(--white); border-radius: var(--radius-md); border: 1px solid var(--border); padding: 14px 10px; text-align: center; position: relative; cursor: pointer; transition: all .15s; }
+.ci-card:active { transform: scale(.98); }
+.ci-badge { position: absolute; top: 8px; right: 8px; font-size: 9px; padding: 2px 7px; border-radius: 10px; font-weight: 500; letter-spacing: .03em; }
+.badge-low { background: var(--amber-bg); color: var(--amber-warn); }
+.badge-fav { background: var(--off-white2); color: var(--charcoal); }
+.ci-icon { font-size: 32px; margin-bottom: 8px; }
+.ci-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+.ci-sub { font-size: 10px; color: var(--text-light); }
+.ci-bar-wrap { margin-top: 8px; height: 3px; background: var(--off-white2); border-radius: 2px; }
+.ci-bar { height: 100%; border-radius: 2px; background: var(--teal); }
+
+/* ── dansha alert ── */
+.dansha-card { background: var(--amber-bg); border: 1px solid #E8D4A0; border-radius: var(--radius-md); padding: 14px; margin-bottom: 14px; }
+.dansha-title { font-size: 13px; font-weight: 500; color: var(--amber-warn); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.dansha-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: var(--white); border-radius: var(--radius-sm); margin-bottom: 6px; }
+.dansha-row:last-child { margin-bottom: 0; }
+.dansha-name { font-size: 12px; color: var(--text); }
+.dansha-reason { font-size: 11px; color: var(--amber-warn); }
+
+/* ── suggest ── */
+.suggest-card { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 16px; margin-bottom: 12px; }
+.suggest-card.featured { border: 1.5px solid var(--charcoal); }
+.suggest-badge { display: inline-block; font-size: 10px; padding: 3px 10px; border-radius: 10px; background: var(--charcoal); color: var(--white); letter-spacing: .05em; margin-bottom: 10px; }
+.suggest-title { font-family: var(--font-serif); font-size: 16px; color: var(--text); margin-bottom: 8px; }
+.suggest-items { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.si-chip { font-size: 11px; padding: 4px 10px; background: var(--off-white); border: 1px solid var(--border); border-radius: 20px; color: var(--text-mid); }
+.suggest-comment { font-size: 12px; color: var(--text-mid); font-style: italic; padding: 10px; background: var(--off-white); border-radius: var(--radius-sm); line-height: 1.7; margin-bottom: 12px; }
+
+/* ── registration form ── */
+.reg-form { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 18px; }
+.reg-progress { margin-bottom: 6px; }
+.reg-prog-track { height: 3px; background: var(--off-white2); border-radius: 2px; }
+.reg-prog-fill { height: 100%; border-radius: 2px; background: var(--charcoal); transition: width .3s ease; }
+.reg-step-label { font-size: 10px; color: var(--text-light); text-align: right; margin-bottom: 14px; letter-spacing: .03em; }
+.reg-section-title { font-family: var(--font-serif); font-size: 15px; color: var(--text); margin-bottom: 12px; }
+.field-label { font-size: 11px; color: var(--text-mid); margin-bottom: 6px; letter-spacing: .04em; }
+.field-group { margin-bottom: 14px; }
+.text-input { width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: var(--font-sans); color: var(--text); background: var(--off-white); transition: border-color .15s; }
+.text-input:focus { outline: none; border-color: var(--charcoal); background: var(--white); }
+
+.cat-grid-reg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+.cat-tile { background: var(--off-white); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 4px; text-align: center; cursor: pointer; transition: all .15s; }
+.cat-tile:active { transform: scale(.96); }
+.cat-tile.sel { background: var(--charcoal); border-color: var(--charcoal); }
+.cat-tile .ct-icon { font-size: 22px; }
+.cat-tile .ct-label { font-size: 10px; color: var(--text-mid); margin-top: 4px; }
+.cat-tile.sel .ct-label { color: var(--off-white); }
+.cat-tile .ct-new { font-size: 8px; color: var(--teal); font-weight: 500; margin-bottom: 2px; }
+.cat-tile.sel .ct-new { color: var(--teal-light); }
+
+.color-section-title { font-size: 10px; color: var(--text-light); letter-spacing: .05em; margin-bottom: 6px; margin-top: 10px; }
+.color-row-reg { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.color-swatch { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+.color-circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); transition: all .15s; }
+.color-circle:active { transform: scale(.92); }
+.color-circle.sel { border-color: var(--charcoal); border-width: 2.5px; box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--charcoal); }
+.color-circle-label { font-size: 9px; color: var(--text-light); text-align: center; line-height: 1.2; }
+
+.metal-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.metal-btn { flex: 1; padding: 10px 6px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--off-white); text-align: center; font-size: 12px; color: var(--text-mid); cursor: pointer; transition: all .15s; }
+.metal-btn.sel { background: var(--charcoal); color: var(--white); border-color: var(--charcoal); }
+
+.taste-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.taste-chip { padding: 7px 14px; border-radius: 20px; font-size: 12px; border: 1px solid var(--border); background: var(--off-white); color: var(--text-mid); cursor: pointer; transition: all .15s; }
+.taste-chip.sel { background: var(--charcoal); color: var(--white); border-color: var(--charcoal); }
+
+.fav-row { display: flex; gap: 8px; }
+.fav-btn { flex: 1; padding: 10px 4px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--off-white); text-align: center; font-size: 12px; color: var(--text-mid); cursor: pointer; transition: all .15s; line-height: 1.4; }
+.fav-btn.sel { background: var(--charcoal); color: var(--white); border-color: var(--charcoal); }
+
+.confirm-table { width: 100%; border-collapse: collapse; }
+.confirm-table td { padding: 9px 4px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
+.confirm-table td:first-child { color: var(--text-light); width: 80px; font-size: 11px; padding-top: 11px; }
+.confirm-table td:last-child { color: var(--text); font-weight: 500; }
+.confirm-table tr:last-child td { border-bottom: none; }
+
+.nav-btns { display: flex; gap: 10px; margin-top: 18px; }
+.nav-btn-back { flex: 1; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--white); font-size: 13px; color: var(--text-mid); cursor: pointer; font-family: var(--font-sans); transition: all .15s; }
+.nav-btn-next { flex: 2; padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--charcoal); color: var(--white); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font-sans); letter-spacing: .04em; transition: all .15s; }
+.nav-btn-next:active { transform: scale(.98); background: var(--black); }
+.nav-btn-next.register { background: var(--teal); }
+.nav-btn-next.register:active { background: #3A7060; }
+
+/* ── success ── */
+.success-view { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; text-align: center; gap: 14px; }
+.success-view.show { display: flex; animation: fadeIn .3s ease; }
+.success-circle { width: 64px; height: 64px; border-radius: 50%; background: var(--teal-light); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+.success-title { font-family: var(--font-serif); font-size: 18px; color: var(--text); }
+.success-sub { font-size: 13px; color: var(--text-mid); line-height: 1.7; }
+
+/* ── misc ── */
+.section-label { font-family: var(--font-serif); font-size: 15px; color: var(--text); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-light); font-size: 13px; line-height: 2; }
+.notif-bar { background: var(--teal-light); border: 1px solid #B8DDD5; border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.notif-text { font-size: 12px; color: #2D6A5A; flex: 1; line-height: 1.6; }
+.notif-text strong { display: block; font-weight: 500; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ページ：今週 -->
+  <div class="page active" id="page-week">
+    <div class="app-header">
+      <div>
+        <div class="app-logo">My Closet</div>
+        <div class="app-sub">おひとりさまコーデ帳</div>
+      </div>
+      <div class="header-count">
+        <div class="hc-num" id="hdr-count">0</div>
+        <div class="hc-label">件登録済み</div>
+      </div>
+    </div>
+    <div class="scroll-area">
+      <div class="notif-bar">
+        <span style="font-size:20px;">🗓</span>
+        <div class="notif-text">
+          <strong>今週のコーデ</strong>
+          毎週日曜日に自動で提案されます
+        </div>
+      </div>
+      <div id="week-cap"><div class="cap-wrap">
+    <div class="cap-row">
+      <span class="cap-title">クローゼット容量</span>
+      <span class="cap-nums">0 <span style="font-size:11px;color:var(--text-light);">/ 80点</span></span>
+    </div>
+    <div class="cap-track"><div class="cap-fill " style="width:0%"></div></div>
+  </div></div>
+      <div class="week-header">
+        <div class="week-title">今週のコーデ</div>
+        <button class="week-regen btn btn-sm" onclick="regenWeek()">↺ 再生成</button>
+      </div>
+      <div class="day-strip" id="day-strip"><div class="day-pill selected"><div class="dp-day">月</div><div class="dp-num">11</div><div class="dp-dot"></div></div><div class="day-pill today"><div class="dp-day">火</div><div class="dp-num">12</div><div class="dp-dot"></div></div><div class="day-pill"><div class="dp-day">水</div><div class="dp-num">13</div><div class="dp-dot"></div></div><div class="day-pill"><div class="dp-day">木</div><div class="dp-num">14</div><div class="dp-dot"></div></div><div class="day-pill"><div class="dp-day">金</div><div class="dp-num">15</div><div class="dp-dot"></div></div><div class="day-pill"><div class="dp-day">土</div><div class="dp-num">16</div><div class="dp-dot"></div></div><div class="day-pill"><div class="dp-day">日</div><div class="dp-num">17</div><div class="dp-dot"></div></div></div>
+      <div id="coord-display">
+    <div class="coord-card">
+      <div class="cc-header">
+        <span class="cc-day">月曜日のコーデ</span>
+        <span class="cc-date">5/11</span>
+      </div>
+      <div class="cc-items">
+        <div class="cc-item"><div class="cc-icon">🧶</div><div class="cc-type">トップス</div><div class="cc-name">オフホワイトニット</div></div><div class="cc-item"><div class="cc-icon">👖</div><div class="cc-type">ボトムス</div><div class="cc-name">スラックス</div></div><div class="cc-item"><div class="cc-icon">👠</div><div class="cc-type">靴</div><div class="cc-name">ベージュパンプス</div></div><div class="cc-item"><div class="cc-icon">👜</div><div class="cc-type">バッグ</div><div class="cc-name">トートバッグ</div></div>
+      </div>
+      <div class="cc-tags"><span class="cc-tag">きれいめ</span><span class="cc-tag">モノトーン</span></div>
+      <div class="cc-memo">ホワイト×ベージュのトーンオントーンで上品に。月曜日から凛とした気分で ✨</div>
+      <div class="cc-actions">
+        <button class="btn btn-dark btn-sm" onclick="markWorn(this)">✓ 着た！</button>
+        <button class="btn btn-sm" onclick="shuffleDay()">↺ 変えたい</button>
+        <button class="btn btn-sm" onclick="switchPage(&#39;suggest&#39;)">提案を見る</button>
+      </div>
+    </div></div>
+    </div>
+  </div>
+
+  <!-- ページ：クローゼット -->
+  <div class="page" id="page-closet">
+    <div class="app-header">
+      <div>
+        <div class="app-logo">クローゼット</div>
+        <div class="app-sub">登録アイテム一覧</div>
+      </div>
+      <div class="header-count">
+        <div class="hc-num" id="cl-count">0</div>
+        <div class="hc-label">件</div>
+      </div>
+    </div>
+    <div class="scroll-area">
+      <div id="closet-cap"><div class="cap-wrap">
+    <div class="cap-row">
+      <span class="cap-title">クローゼット容量</span>
+      <span class="cap-nums">0 <span style="font-size:11px;color:var(--text-light);">/ 80点</span></span>
+    </div>
+    <div class="cap-track"><div class="cap-fill " style="width:0%"></div></div>
+  </div></div>
+      <div id="dansha-section"></div>
+      <div class="cat-scroll" id="cat-filter"></div>
+      <div class="closet-grid" id="closet-grid"></div>
+      <div id="closet-empty" class="empty-state" style="display:none;">
+        まだアイテムがありません<br>「追加」タブから登録してください ✨
+      </div>
+    </div>
+  </div>
+
+  <!-- ページ：提案 -->
+  <div class="page" id="page-suggest">
+    <div class="app-header">
+      <div>
+        <div class="app-logo">コーデ提案</div>
+        <div class="app-sub">あなたのクローゼットから</div>
+      </div>
+    </div>
+    <div class="scroll-area" id="suggest-area">
+    </div>
+  </div>
+
+  <!-- ページ：追加 -->
+  <div class="page" id="page-add">
+    <div class="app-header">
+      <div>
+        <div class="app-logo">アイテム追加</div>
+        <div class="app-sub">クローゼットに登録する</div>
+      </div>
+    </div>
+    <div class="scroll-area">
+      <div id="add-cap"><div class="cap-wrap">
+    <div class="cap-row">
+      <span class="cap-title">クローゼット容量</span>
+      <span class="cap-nums">0 <span style="font-size:11px;color:var(--text-light);">/ 80点</span></span>
+    </div>
+    <div class="cap-track"><div class="cap-fill " style="width:0%"></div></div>
+  </div></div>
+      <div class="reg-form" id="reg-form">
+        <div class="reg-progress">
+          <div class="reg-prog-track"><div class="reg-prog-fill" id="reg-prog" style="width:0%"></div></div>
+        </div>
+        <div class="reg-step-label" id="reg-step-lbl">ステップ 1 / 4</div>
+        <div id="reg-s1" style="display: block;">
+    <div class="reg-section-title">カテゴリーを選んでください</div>
+    <div class="cat-grid-reg">
+      <div class="cat-tile" onclick="pickRegCat(&#39;tops&#39;)">
+        
+        <div class="ct-icon">👕</div>
+        <div class="ct-label">トップス</div>
+      </div><div class="cat-tile" onclick="pickRegCat(&#39;bottoms&#39;)">
+        
+        <div class="ct-icon">👖</div>
+        <div class="ct-label">ボトムス</div>
+      </div><div class="cat-tile" onclick="pickRegCat(&#39;onepiece&#39;)">
+        <div class="ct-new">NEW</div>
+        <div class="ct-icon">👗</div>
+        <div class="ct-label">ワンピース</div>
+      </div><div class="cat-tile" onclick="pickRegCat(&#39;outer&#39;)">
+        
+        <div class="ct-icon">🧥</div>
+        <div class="ct-label">アウター</div>
+      </div><div class="cat-tile" onclick="pickRegCat(&#39;shoes&#39;)">
+        
+        <div class="ct-icon">👟</div>
+        <div class="ct-label">靴</div>
+      </div><div class="cat-tile" onclick="pickRegCat(&#39;bag&#39;)">
+        
+        <div class="ct-icon">👜</div>
+        <div class="ct-label">バッグ</div>
+      </div><div class="cat-tile" onclick="pickRegCat(&#39;acc&#39;)">
+        
+        <div class="ct-icon">💍</div>
+        <div class="ct-label">アクセ</div>
+      </div><div class="cat-tile" onclick="pickRegCat(&#39;komono&#39;)">
+        <div class="ct-new">NEW</div>
+        <div class="ct-icon">🧣</div>
+        <div class="ct-label">小物</div>
+      </div>
+    </div></div>
+        <div id="reg-s2" style="display:none;"></div>
+        <div id="reg-s3" style="display:none;"></div>
+        <div id="reg-s4" style="display:none;"></div>
+        <div class="nav-btns">
+          <button class="nav-btn-back" id="reg-back" onclick="regPrev()" disabled="">もどる</button>
+          <button class="nav-btn-next" id="reg-next" onclick="regNext()">つぎへ</button>
+        </div>
+      </div>
+      <div class="success-view" id="reg-success">
+        <div class="success-circle">✓</div>
+        <div class="success-title" id="suc-title">登録しました！</div>
+        <div class="success-sub" id="suc-sub"></div>
+        <button class="btn btn-dark" onclick="regReset()" style="margin-top:8px;">続けて登録する</button>
+        <button class="btn" onclick="switchPage(&#39;closet&#39;)">クローゼットを見る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- タブバー -->
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchPage(&#39;week&#39;)">
+      <span class="tab-icon">🗓</span>
+      <span class="tab-label">今週</span>
+    </button>
+    <button class="tab" onclick="switchPage(&#39;closet&#39;)">
+      <span class="tab-icon">👗</span>
+      <span class="tab-label">クローゼット</span>
+    </button>
+    <button class="tab" onclick="switchPage(&#39;suggest&#39;)">
+      <span class="tab-icon">✨</span>
+      <span class="tab-label">提案</span>
+    </button>
+    <button class="tab" onclick="switchPage(&#39;add&#39;)">
+      <span class="tab-icon">＋</span>
+      <span class="tab-label">追加</span>
+    </button>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────
+const MAX_ITEMS = 80;
+const STORAGE_KEY = 'mycloset_items_v1';
+
+const CATS = [
+  {val:'tops',    icon:'👕', label:'トップス'},
+  {val:'bottoms', icon:'👖', label:'ボトムス'},
+  {val:'onepiece',icon:'👗', label:'ワンピース', isNew:true},
+  {val:'outer',   icon:'🧥', label:'アウター'},
+  {val:'shoes',   icon:'👟', label:'靴'},
+  {val:'bag',     icon:'👜', label:'バッグ'},
+  {val:'acc',     icon:'💍', label:'アクセ'},
+  {val:'komono',  icon:'🧣', label:'小物', isNew:true},
+];
+
+const MONO_COLORS = [
+  {c:'#FFFFFF', name:'ホワイト', border:true},
+  {c:'#F0EDE8', name:'オフホワイト'},
+  {c:'#B4B2A9', name:'グレー'},
+  {c:'#5F5E5A', name:'チャコール'},
+  {c:'#2C2B28', name:'ブラック'},
+];
+const BROWN_COLORS = [
+  {c:'#F5ECD8', name:'ベージュ'},
+  {c:'#D4A574', name:'キャメル'},
+  {c:'#8B6347', name:'ブラウン'},
+];
+const DENIM_COLORS = [
+  {c:'#3D5A8A', name:'インディゴ'},
+  {c:'#7096C0', name:'ライト\nインディゴ'},
+];
+const OTHER_COLORS = [
+  {c:'#F4C0D1', name:'ピンク'},
+  {c:'#F0997B', name:'テラコッタ'},
+  {c:'#FAC775', name:'イエロー'},
+  {c:'#9FE1CB', name:'グリーン'},
+  {c:'#B5D4F4', name:'ブルー'},
+  {c:'#AFA9EC', name:'ラベンダー'},
+];
+
+const ACC_METALS = ['🥇 ゴールド','🩶 シルバー','🤍 パール'];
+
+const TASTES = ['モノトーン','きれいめ','カジュアル','ナチュラル','ガーリー','モード','フォーマル','ストリート'];
+
+const FAVS = ['⭐ 普通','⭐⭐ 好き','⭐⭐⭐ 大好き！'];
+
+const DAYS_JP = ['日','月','火','水','木','金','土'];
+const DAYS_FULL = ['日曜日','月曜日','火曜日','水曜日','木曜日','金曜日','土曜日'];
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let items = [];
+let selectedDayIdx = 0;
+let regStep = 1;
+let regData = { cat:null, name:'', color:null, metal:null, tastes:[], fav:null };
+let closetFilter = 'all';
+
+// ─────────────────────────────────────────
+// STORAGE
+// ─────────────────────────────────────────
+function saveItems() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch(e) {}
+}
+function loadItems() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) items = JSON.parse(raw);
+  } catch(e) { items = []; }
+}
+
+// ─────────────────────────────────────────
+// NAV
+// ─────────────────────────────────────────
+function switchPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const tabs = document.querySelectorAll('.tab');
+  const order = ['week','closet','suggest','add'];
+  tabs[order.indexOf(id)].classList.add('active');
+  if(id==='week') renderWeek();
+  if(id==='closet') renderCloset();
+  if(id==='suggest') renderSuggest();
+  if(id==='add') renderAddCap();
+  updateHeaderCount();
+}
+
+function updateHeaderCount() {
+  document.querySelectorAll('#hdr-count, #cl-count').forEach(el => el.textContent = items.length);
+}
+
+// ─────────────────────────────────────────
+// CAPACITY BAR
+// ─────────────────────────────────────────
+function capBarHTML(id) {
+  const n = items.length;
+  const pct = Math.round(n / MAX_ITEMS * 100);
+  const cls = pct >= 100 ? 'full' : pct >= 80 ? 'warn' : '';
+  return `<div class="cap-wrap">
+    <div class="cap-row">
+      <span class="cap-title">クローゼット容量</span>
+      <span class="cap-nums">${n} <span style="font-size:11px;color:var(--text-light);">/ ${MAX_ITEMS}点</span></span>
+    </div>
+    <div class="cap-track"><div class="cap-fill ${cls}" style="width:${pct}%"></div></div>
+  </div>`;
+}
+function renderCaps() {
+  ['week-cap','closet-cap','add-cap'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = capBarHTML(id);
+  });
+}
+function renderAddCap() {
+  const el = document.getElementById('add-cap');
+  if(el) el.innerHTML = capBarHTML('add-cap');
+}
+
+// ─────────────────────────────────────────
+// WEEK VIEW
+// ─────────────────────────────────────────
+const SAMPLE_COORDS = [
+  { items:[{icon:'🧶',type:'トップス',name:'オフホワイトニット'},{icon:'👖',type:'ボトムス',name:'スラックス'},{icon:'👠',type:'靴',name:'ベージュパンプス'},{icon:'👜',type:'バッグ',name:'トートバッグ'}], tags:['きれいめ','モノトーン'], memo:'ホワイト×ベージュのトーンオントーンで上品に。月曜日から凛とした気分で ✨' },
+  { items:[{icon:'👕',type:'トップス',name:'白シャツ'},{icon:'👖',type:'ボトムス',name:'インディゴデニム'},{icon:'👟',type:'靴',name:'ホワイトスニーカー'},{icon:'🎒',type:'バッグ',name:'レザーリュック'}], tags:['カジュアル','デニム'], memo:'白シャツ×インディゴデニムは永遠の正解。今日もすっきりかっこよく 💙' },
+  { items:[{icon:'🧥',type:'アウター',name:'チェスターコート'},{icon:'👕',type:'トップス',name:'タートルネック'},{icon:'👖',type:'ボトムス',name:'スキニー'},{icon:'👢',type:'靴',name:'ショートブーツ'}], tags:['きれいめ','モノトーン'], memo:'チャコール×ブラックの深いトーン。コート姿が板についてきた 🤍' },
+  { items:[{icon:'👗',type:'ワンピース',name:'ブラックワンピース'},{icon:'🧥',type:'アウター',name:'ベージュカーデ'},{icon:'🥿',type:'靴',name:'フラットシューズ'},{icon:'💍',type:'アクセ',name:'ゴールドネックレス'}], tags:['きれいめ','ガーリー'], memo:'ブラックワンピにゴールドで品を添えて。シンプルなのにどこか特別な日 ✨' },
+  { items:[{icon:'👕',type:'トップス',name:'グレーニット'},{icon:'👖',type:'ボトムス',name:'ワイドパンツ'},{icon:'👟',type:'靴',name:'ローファー'},{icon:'👜',type:'バッグ',name:'サドルバッグ'}], tags:['カジュアル','ナチュラル'], memo:'グレー×キャメルのほっこりナチュラルコーデ。週末のような気持ちで金曜を ☕' },
+  { items:[{icon:'🎽',type:'トップス',name:'ボーダーカットソー'},{icon:'👖',type:'ボトムス',name:'ワイドデニム'},{icon:'👟',type:'靴',name:'スニーカー'},{icon:'🧣',type:'小物',name:'リネンストール'}], tags:['カジュアル','デニム'], memo:'土曜日はのびのびカジュアルで。ストールをさっと羽織るだけでこなれ感 🌿' },
+  { items:[{icon:'👗',type:'ワンピース',name:'リネンワンピ'},{icon:'👜',type:'バッグ',name:'かごバッグ'},{icon:'🥿',type:'靴',name:'サンダル'},{icon:'💍',type:'アクセ',name:'パールイヤリング'}], tags:['ナチュラル','きれいめ'], memo:'日曜日は自分のためだけにきれいな服を。来週もきっと大丈夫 🤍' },
+];
+
+function renderWeek() {
+  renderCaps();
+  const today = new Date();
+  const dow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((dow+6)%7));
+
+  // day strip
+  const strip = document.getElementById('day-strip');
+  strip.innerHTML = '';
+  for(let i=0; i<7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const isToday = d.toDateString() === today.toDateString();
+    const isSel = i === selectedDayIdx;
+    const div = document.createElement('div');
+    div.className = 'day-pill' + (isToday?' today':'') + (isSel?' selected':'');
+    div.innerHTML = `<div class="dp-day">${DAYS_JP[d.getDay()]}</div><div class="dp-num">${d.getDate()}</div><div class="dp-dot"></div>`;
+    div.onclick = () => { selectedDayIdx = i; renderWeek(); };
+    strip.appendChild(div);
+  }
+
+  // coord
+  const c = SAMPLE_COORDS[selectedDayIdx];
+  const selDate = new Date(monday);
+  selDate.setDate(monday.getDate() + selectedDayIdx);
+  const mo = selDate.getMonth()+1, da = selDate.getDate();
+  document.getElementById('coord-display').innerHTML = `
+    <div class="coord-card">
+      <div class="cc-header">
+        <span class="cc-day">${DAYS_FULL[selDate.getDay()]}のコーデ</span>
+        <span class="cc-date">${mo}/${da}</span>
+      </div>
+      <div class="cc-items">
+        ${c.items.map(it=>`<div class="cc-item"><div class="cc-icon">${it.icon}</div><div class="cc-type">${it.type}</div><div class="cc-name">${it.name}</div></div>`).join('')}
+      </div>
+      <div class="cc-tags">${c.tags.map(t=>`<span class="cc-tag">${t}</span>`).join('')}</div>
+      <div class="cc-memo">${c.memo}</div>
+      <div class="cc-actions">
+        <button class="btn btn-dark btn-sm" onclick="markWorn(this)">✓ 着た！</button>
+        <button class="btn btn-sm" onclick="shuffleDay()">↺ 変えたい</button>
+        <button class="btn btn-sm" onclick="switchPage('suggest')">提案を見る</button>
+      </div>
+    </div>`;
+}
+
+function markWorn(btn) { btn.textContent = '✓ 記録済み'; btn.disabled = true; btn.style.opacity = '.6'; }
+function shuffleDay() {
+  selectedDayIdx = (selectedDayIdx + 3) % 7;
+  renderWeek();
+}
+function regenWeek() { renderWeek(); }
+
+// ─────────────────────────────────────────
+// CLOSET
+// ─────────────────────────────────────────
+function renderCloset() {
+  renderCaps();
+  const cl = document.getElementById('cl-count');
+  if(cl) cl.textContent = items.length;
+
+  // dansha
+  const low = items.filter(it => (it.wornCount||0) < 2);
+  const ds = document.getElementById('dansha-section');
+  if(low.length > 0) {
+    ds.innerHTML = `<div class="dansha-card">
+      <div class="dansha-title">⚠️ 断捨離おすすめ</div>
+      ${low.slice(0,3).map(it=>`<div class="dansha-row"><span class="dansha-name">${it.icon||'👔'} ${it.name}</span><span class="dansha-reason">着用少ない</span></div>`).join('')}
+    </div>`;
+  } else { ds.innerHTML = ''; }
+
+  // filter
+  const cf = document.getElementById('cat-filter');
+  const allCats = ['all',...CATS.map(c=>c.val)];
+  const allLabels = {all:'すべて',...Object.fromEntries(CATS.map(c=>[c.val,c.label]))};
+  cf.innerHTML = allCats.map(v=>`<div class="cat-pill${closetFilter===v?' active':''}" onclick="setClosetFilter('${v}')">${allLabels[v]}</div>`).join('');
+
+  // grid
+  const grid = document.getElementById('closet-grid');
+  const empty = document.getElementById('closet-empty');
+  const filtered = closetFilter==='all' ? items : items.filter(i=>i.cat===closetFilter);
+  if(filtered.length === 0) {
+    grid.innerHTML=''; empty.style.display='block';
+  } else {
+    empty.style.display='none';
+    grid.innerHTML = filtered.map((it,idx)=>{
+      const pct = Math.min(100, Math.round((it.wornCount||0)/10*100));
+      const isLow = (it.wornCount||0) < 2;
+      const isFav = it.fav === 2;
+      return `<div class="ci-card" onclick="itemDetail(${items.indexOf(it)})">
+        ${isLow?'<span class="ci-badge badge-low">低頻度</span>':isFav?'<span class="ci-badge badge-fav">お気に入り</span>':''}
+        <div class="ci-icon">${it.icon||'👔'}</div>
+        <div class="ci-name">${it.name}</div>
+        <div class="ci-sub">${it.colorName||''} ${it.tastes&&it.tastes[0]?'・'+it.tastes[0]:''}</div>
+        <div class="ci-bar-wrap"><div class="ci-bar" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function setClosetFilter(v) { closetFilter=v; renderCloset(); }
+function itemDetail(idx) { /* 詳細ページは将来拡張 */ }
+
+// ─────────────────────────────────────────
+// SUGGEST
+// ─────────────────────────────────────────
+const SUGGEST_DATA = [
+  { featured:true, title:'今日のイチオシ', label:'今日のおすすめ', items:['オフホワイトニット','スラックス','ベージュパンプス','パールイヤリング'], tags:['きれいめ','モノトーン'], comment:'ホワイト×ベージュのトーンオントーン。パールがさりげなく上品さを加えて 🤍' },
+  { featured:false, title:'モノトーンシック', label:'', items:['ブラックワンピース','チェスターコート','ショートブーツ','シルバーネックレス'], tags:['モノトーン','きれいめ'], comment:'黒づくしにシルバーのアクセが映える。自分に自信が持てる日の装い ✨' },
+  { featured:false, title:'デニムカジュアル', label:'', items:['白シャツ','インディゴデニム','ホワイトスニーカー','レザーバッグ'], tags:['カジュアル','デニム'], comment:'白×インディゴの定番を自分らしく。シンプルが一番かっこいい 💙' },
+  { featured:false, title:'ナチュラルまったり', label:'', items:['リネンワンピ','ベージュカーデ','フラットシューズ','かごバッグ'], tags:['ナチュラル','リラックス'], comment:'休日はリネンと籠でとびきり素の自分に。それが一番のおしゃれかも 🌿' },
+];
+function renderSuggest() {
+  const area = document.getElementById('suggest-area');
+  area.innerHTML = SUGGEST_DATA.map(s=>`
+    <div class="suggest-card${s.featured?' featured':''}">
+      ${s.label?`<div class="suggest-badge">${s.label}</div>`:''}
+      <div class="suggest-title">${s.title}</div>
+      <div class="suggest-items">${s.items.map(i=>`<span class="si-chip">${i}</span>`).join('')}</div>
+      <div class="suggest-comment">${s.comment}</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-dark btn-sm" onclick="addToWeek(this)">今週に追加</button>
+        <button class="btn btn-sm" onclick="saveSuggest(this)">♡ 保存</button>
+      </div>
+    </div>`).join('');
+}
+function addToWeek(btn) { btn.textContent='✓ 追加済み'; btn.disabled=true; btn.className='btn btn-teal btn-sm'; }
+function saveSuggest(btn) { btn.textContent='♡ 保存済み'; btn.disabled=true; }
+
+// ─────────────────────────────────────────
+// REGISTRATION FORM
+// ─────────────────────────────────────────
+function regReset() {
+  regStep=1; regData={cat:null,name:'',color:null,metal:null,tastes:[],fav:null};
+  document.getElementById('reg-form').style.display='block';
+  document.getElementById('reg-success').classList.remove('show');
+  renderRegStep();
+  renderAddCap();
+}
+
+function renderRegStep() {
+  [1,2,3,4].forEach(i=>{ document.getElementById('reg-s'+i).style.display = i===regStep?'block':'none'; });
+  document.getElementById('reg-prog').style.width = ((regStep-1)/4*100)+'%';
+  document.getElementById('reg-step-lbl').textContent = 'ステップ '+regStep+' / 4';
+  document.getElementById('reg-back').disabled = regStep===1;
+  const nb = document.getElementById('reg-next');
+  nb.textContent = regStep===4 ? '登録する' : 'つぎへ';
+  nb.className = 'nav-btn-next' + (regStep===4?' register':'');
+  if(regStep===1) buildRegS1();
+  if(regStep===2) buildRegS2();
+  if(regStep===3) buildRegS3();
+  if(regStep===4) buildRegS4();
+}
+
+function buildRegS1() {
+  document.getElementById('reg-s1').innerHTML = `
+    <div class="reg-section-title">カテゴリーを選んでください</div>
+    <div class="cat-grid-reg">
+      ${CATS.map(c=>`<div class="cat-tile${regData.cat===c.val?' sel':''}" onclick="pickRegCat('${c.val}')">
+        ${c.isNew?`<div class="ct-new">NEW</div>`:''}
+        <div class="ct-icon">${c.icon}</div>
+        <div class="ct-label">${c.label}</div>
+      </div>`).join('')}
+    </div>`;
+}
+
+function pickRegCat(v) {
+  regData.cat=v; regData.color=null; regData.metal=null;
+  buildRegS1();
+  setTimeout(()=>{regStep=2;renderRegStep();},160);
+}
+
+function buildRegS2() {
+  const isAcc = regData.cat==='acc' || regData.cat==='komono';
+  const showDenim = ['bottoms','onepiece'].includes(regData.cat);
+  const colorBlock = (label, cols) => `
+    <div class="color-section-title">${label}</div>
+    <div class="color-row-reg">
+      ${cols.map(c=>`<div class="color-swatch" onclick="pickRegColor('${c.name}')">
+        <div class="color-circle${regData.color===c.name?' sel':''}" style="background:${c.c};${c.border?'border-color:#D8D5CE;':''}"></div>
+        <div class="color-circle-label">${c.name.replace('\n','<br>')}</div>
+      </div>`).join('')}
+    </div>`;
+  document.getElementById('reg-s2').innerHTML = `
+    <div class="reg-section-title">名前とカラー</div>
+    <div class="field-group">
+      <div class="field-label">アイテム名 ＊</div>
+      <input class="text-input" id="reg-name" type="text" placeholder="例：黒タートルネック" value="${regData.name}" oninput="regData.name=this.value">
+    </div>
+    ${isAcc ? `<div class="field-group">
+      <div class="field-label">素材・カラー</div>
+      <div class="metal-row">
+        ${ACC_METALS.map(m=>`<div class="metal-btn${regData.metal===m?' sel':''}" onclick="pickMetal('${m}')">${m}</div>`).join('')}
+      </div>
+    </div>` : `<div class="field-group">
+      <div class="field-label">メインカラー</div>
+      ${colorBlock('モノトーン', MONO_COLORS)}
+      ${colorBlock('ブラウン系', BROWN_COLORS)}
+      ${showDenim ? colorBlock('デニム', DENIM_COLORS) : ''}
+      ${colorBlock('その他カラー', OTHER_COLORS)}
+    </div>`}`;
+}
+
+function pickRegColor(name) { regData.color=name; buildRegS2(); }
+function pickMetal(m) { regData.metal=m; buildRegS2(); }
+
+function buildRegS3() {
+  document.getElementById('reg-s3').innerHTML = `
+    <div class="reg-section-title">テイストとお気に入り</div>
+    <div class="field-group">
+      <div class="field-label">テイスト（複数OK）</div>
+      <div class="taste-wrap">
+        ${TASTES.map(t=>`<div class="taste-chip${regData.tastes.includes(t)?' sel':''}" onclick="toggleRegTaste('${t}')">${t}</div>`).join('')}
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">お気に入り度</div>
+      <div class="fav-row">
+        ${FAVS.map((f,i)=>`<div class="fav-btn${regData.fav===i?' sel':''}" onclick="pickRegFav(${i})">${f}</div>`).join('')}
+      </div>
+    </div>`;
+}
+function toggleRegTaste(t) {
+  regData.tastes.includes(t) ? regData.tastes=regData.tastes.filter(x=>x!==t) : regData.tastes.push(t);
+  buildRegS3();
+}
+function pickRegFav(i) { regData.fav=i; buildRegS3(); }
+
+function buildRegS4() {
+  const cat = CATS.find(c=>c.val===regData.cat);
+  const colorVal = regData.cat==='acc'||regData.cat==='komono' ? (regData.metal||'—') : (regData.color||'—');
+  const rows = [
+    ['カテゴリー', cat ? cat.icon+' '+cat.label : '—'],
+    ['アイテム名', regData.name||'—'],
+    ['カラー', colorVal],
+    ['テイスト', regData.tastes.length ? regData.tastes.join('・') : '—'],
+    ['お気に入り', regData.fav!==null ? FAVS[regData.fav] : '—'],
+  ];
+  document.getElementById('reg-s4').innerHTML = `
+    <div class="reg-section-title">内容を確認して登録</div>
+    <div style="background:var(--off-white);border-radius:var(--radius-sm);padding:4px 12px;">
+      <table class="confirm-table">
+        ${rows.map(([l,v])=>`<tr><td>${l}</td><td>${v}</td></tr>`).join('')}
+      </table>
+    </div>`;
+}
+
+function regNext() {
+  if(regStep===1 && !regData.cat) { alert('カテゴリーを選んでください'); return; }
+  if(regStep===2) {
+    const ni = document.getElementById('reg-name');
+    if(ni) regData.name = ni.value.trim();
+    if(!regData.name) { alert('アイテム名を入力してください'); if(ni) ni.focus(); return; }
+  }
+  if(regStep===4) { registerItem(); return; }
+  regStep++; renderRegStep();
+}
+function regPrev() { if(regStep>1) { regStep--; renderRegStep(); } }
+
+function registerItem() {
+  if(items.length >= MAX_ITEMS) { alert('登録上限（80点）に達しています。断捨離してから追加してください。'); return; }
+  const cat = CATS.find(c=>c.val===regData.cat);
+  const newItem = {
+    id: Date.now(),
+    cat: regData.cat,
+    icon: cat ? cat.icon : '👔',
+    name: regData.name,
+    colorName: regData.metal || regData.color || '',
+    tastes: [...regData.tastes],
+    fav: regData.fav,
+    wornCount: 0,
+    createdAt: new Date().toISOString(),
+  };
+  items.push(newItem);
+  saveItems();
+  document.getElementById('reg-form').style.display='none';
+  const ss = document.getElementById('reg-success');
+  ss.classList.add('show');
+  document.getElementById('suc-title').textContent = '「'+newItem.name+'」を登録しました！';
+  document.getElementById('suc-sub').textContent = `クローゼット：${items.length} / ${MAX_ITEMS}点\n残り ${MAX_ITEMS-items.length} 点登録できます`;
+  updateHeaderCount();
+}
+
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+loadItems();
+updateHeaderCount();
+renderWeek();
+renderRegStep();
+</script>
+
+
+</body></html>
