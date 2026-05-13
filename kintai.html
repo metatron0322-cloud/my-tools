@@ -7,55 +7,44 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #ffffff;
-      --bg2: #f5f5f3;
-      --bg3: #efefec;
-      --text: #1a1a18;
-      --text2: #6b6b67;
-      --text3: #a0a09c;
-      --border: rgba(0,0,0,0.12);
-      --border2: rgba(0,0,0,0.22);
-      --radius: 8px;
-      --radius-lg: 12px;
-      --danger: #e24b4a;
-      --warn: #ef9f27;
-      --green: #1d9e75;
+      --bg: #ffffff; --bg2: #f5f5f3; --bg3: #efefec;
+      --text: #1a1a18; --text2: #6b6b67; --text3: #a0a09c;
+      --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
+      --radius: 8px; --radius-lg: 12px;
+      --danger: #e24b4a; --warn: #ef9f27; --green: #1d9e75;
     }
-
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #1e1e1c;
-        --bg2: #2a2a28;
-        --bg3: #323230;
-        --text: #f0f0ec;
-        --text2: #a8a8a4;
-        --text3: #6e6e6a;
-        --border: rgba(255,255,255,0.12);
-        --border2: rgba(255,255,255,0.22);
+        --bg: #1e1e1c; --bg2: #2a2a28; --bg3: #323230;
+        --text: #f0f0ec; --text2: #a8a8a4; --text3: #6e6e6a;
+        --border: rgba(255,255,255,0.12); --border2: rgba(255,255,255,0.22);
       }
     }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic UI', sans-serif;
-      background: var(--bg3);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 24px 16px;
-    }
-
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; padding: 24px 16px; }
     .app { max-width: 780px; margin: 0 auto; }
-
     h1 { font-size: 22px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
     .subtitle { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
-
     .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 18px; margin-bottom: 14px; }
-
     .settings-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
     .settings-row label { font-size: 14px; color: var(--text2); display: flex; align-items: center; gap: 6px; }
     .settings-row input[type="number"] { width: 90px; border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 5px 8px; font-size: 14px; background: var(--bg); color: var(--text); }
     .settings-row input[type="number"]:focus { outline: none; box-shadow: 0 0 0 2px #378add44; }
+
+    /* 有給パネル */
+    .paid-panel { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 18px; margin-bottom: 14px; }
+    .paid-panel-title { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .paid-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    @media (max-width: 500px) { .paid-grid { grid-template-columns: repeat(2, 1fr); } }
+    .paid-cell { background: var(--bg2); border-radius: var(--radius); padding: 10px 12px; }
+    .paid-cell-label { font-size: 11px; color: var(--text2); margin-bottom: 6px; }
+    .paid-cell-val { font-size: 22px; font-weight: 500; color: var(--text); }
+    .paid-cell-val.ok { color: var(--green); }
+    .paid-cell-val.warn { color: var(--warn); }
+    .paid-cell-val.danger { color: var(--danger); }
+    .paid-cell-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .paid-input { width: 64px; border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 4px 6px; font-size: 15px; background: var(--bg); color: var(--text); text-align: center; }
+    .paid-input:focus { outline: none; box-shadow: 0 0 0 2px #378add44; }
 
     .bulk-panel { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 12px 18px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .bulk-label { font-size: 13px; color: var(--text2); white-space: nowrap; display: flex; align-items: center; gap: 6px; }
@@ -65,12 +54,10 @@
     .btn-bulk { background: var(--bg2); border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 6px 16px; font-size: 13px; color: var(--text); cursor: pointer; white-space: nowrap; font-family: inherit; }
     .btn-bulk:hover { border-color: var(--text3); }
     .btn-bulk:active { transform: scale(0.98); }
-
     .month-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
     .month-nav button { background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 7px 14px; cursor: pointer; font-size: 15px; color: var(--text); font-family: inherit; }
     .month-nav button:hover { background: var(--bg2); }
     .month-label { font-size: 18px; font-weight: 500; color: var(--text); min-width: 130px; text-align: center; }
-
     .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
     @media (max-width: 500px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } }
     .metric { background: var(--bg2); border-radius: var(--radius); padding: 12px 14px; }
@@ -78,13 +65,11 @@
     .metric-value { font-size: 22px; font-weight: 500; color: var(--text); }
     .metric-value.overtime { color: var(--danger); }
     .metric-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
-
     .bar-label { font-size: 13px; color: var(--text2); margin-bottom: 8px; display: flex; justify-content: space-between; }
     .bar-track { background: var(--bg2); border-radius: 4px; height: 9px; overflow: hidden; }
     .bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s; background: var(--green); }
     .bar-fill.warn { background: var(--warn); }
     .bar-fill.danger { background: var(--danger); }
-
     .table-wrap { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow-x: auto; margin-bottom: 10px; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 620px; }
     thead th { background: var(--bg2); padding: 9px 8px; text-align: left; font-weight: 500; font-size: 11px; color: var(--text2); border-bottom: 0.5px solid var(--border); white-space: nowrap; }
@@ -93,19 +78,14 @@
     tbody tr:hover { background: var(--bg2); }
     tbody td { padding: 5px 8px; color: var(--text); vertical-align: middle; }
     .overtime-cell { color: var(--danger); font-weight: 500; }
-
     .time-input { width: 52px; border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 3px 4px; font-size: 12px; background: var(--bg); color: var(--text); text-align: center; font-family: monospace; letter-spacing: 0.5px; }
     .time-input:focus { outline: none; box-shadow: 0 0 0 2px #378add44; border-color: #378add; }
     .time-input.error { border-color: var(--danger); background: #fcebeb; }
-
     .time-input-lg { width: 62px; border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 5px 6px; font-size: 14px; background: var(--bg); color: var(--text); text-align: center; font-family: monospace; }
     .time-input-lg:focus { outline: none; box-shadow: 0 0 0 2px #378add44; border-color: #378add; }
-
     .break-input { width: 46px; border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 3px 4px; font-size: 12px; background: var(--bg); color: var(--text); text-align: center; }
     .break-input:focus { outline: none; box-shadow: 0 0 0 2px #378add44; }
-
     select { border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 3px 5px; font-size: 11px; background: var(--bg); color: var(--text); cursor: pointer; }
-
     .away-wrap { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
     .away-pair { display: flex; align-items: center; gap: 2px; }
     .away-sep { font-size: 11px; color: var(--text3); }
@@ -114,9 +94,7 @@
     .btn-del-away { background: none; border: none; padding: 0 2px; font-size: 13px; color: var(--text3); cursor: pointer; line-height: 1; }
     .btn-del-away:hover { color: var(--danger); }
     .away-total { font-size: 11px; color: var(--danger); white-space: nowrap; }
-
     .hint { font-size: 11px; color: var(--text3); padding-left: 4px; }
-
     .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--text); color: var(--bg); font-size: 13px; padding: 9px 22px; border-radius: 20px; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; white-space: nowrap; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
@@ -125,6 +103,33 @@
 <div class="app">
   <h1><i class="ti ti-clock"></i>勤怠管理</h1>
   <p class="subtitle">勤務時間・残業・離席・有給を一括管理</p>
+
+  <!-- 有給残日数パネル -->
+  <div class="paid-panel">
+    <div class="paid-panel-title"><i class="ti ti-beach" style="font-size:15px;"></i>有給休暇の残日数</div>
+    <div class="paid-grid">
+      <div class="paid-cell">
+        <div class="paid-cell-label">前年繰越</div>
+        <input class="paid-input" type="number" id="paidCarry" value="0" min="0" max="40" step="0.5" onchange="savePaidSettings(); updatePaidDisplay()">
+        <div class="paid-cell-sub">日</div>
+      </div>
+      <div class="paid-cell">
+        <div class="paid-cell-label">今年付与</div>
+        <input class="paid-input" type="number" id="paidGrant" value="0" min="0" max="40" step="0.5" onchange="savePaidSettings(); updatePaidDisplay()">
+        <div class="paid-cell-sub">日</div>
+      </div>
+      <div class="paid-cell">
+        <div class="paid-cell-label">使用済み（自動）</div>
+        <div class="paid-cell-val" id="paidUsed">0</div>
+        <div class="paid-cell-sub">日</div>
+      </div>
+      <div class="paid-cell">
+        <div class="paid-cell-label">残日数</div>
+        <div class="paid-cell-val ok" id="paidRemain">0</div>
+        <div class="paid-cell-sub">日</div>
+      </div>
+    </div>
+  </div>
 
   <div class="card">
     <div class="settings-row">
@@ -201,13 +206,13 @@
   </div>
   <p class="hint">時刻は「HH:MM」形式で入力（例: 09:00、18:30）　離席は＋ボタンで複数追加できます</p>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbw-jMbYwuCZUbi7AAQ-39MnVG2WQCNVTixj-WAyO2oDWQv_OxMC0V4Az1y0Y9cZM0HO/exec';
 var currentYear, currentMonth;
 var records = {};
+var allRecords = {}; // 全月データキャッシュ（有給集計用）
 var saving = false;
 
 function init() {
@@ -217,57 +222,103 @@ function init() {
   loadSettings();
 }
 
-// 設定（時給・所定時間）の読み込み
 function loadSettings() {
   showToast('データを読み込み中...');
   fetch(GAS_URL + '?action=loadSettings')
     .then(function(r) { return r.json(); })
     .then(function(res) {
-      if (res.settings && res.settings.rate) document.getElementById('hourlyRate').value = res.settings.rate;
-      if (res.settings && res.settings.hours) document.getElementById('stdHours').value = res.settings.hours;
-      loadFromStorage();
+      if (res.settings) {
+        if (res.settings.rate) document.getElementById('hourlyRate').value = res.settings.rate;
+        if (res.settings.hours) document.getElementById('stdHours').value = res.settings.hours;
+        if (res.settings.paidCarry !== undefined) document.getElementById('paidCarry').value = res.settings.paidCarry;
+        if (res.settings.paidGrant !== undefined) document.getElementById('paidGrant').value = res.settings.paidGrant;
+      }
+      loadAllPaidData();
     })
-    .catch(function() {
-      loadFromStorage();
-    });
+    .catch(function() { loadFromStorage(); });
 }
 
-// 設定の保存
 function saveSettings() {
   var rate = document.getElementById('hourlyRate').value;
   var hours = document.getElementById('stdHours').value;
+  var paidCarry = document.getElementById('paidCarry').value;
+  var paidGrant = document.getElementById('paidGrant').value;
   fetch(GAS_URL, {
     method: 'POST',
-    body: JSON.stringify({ action: 'saveSettings', rate: rate, hours: hours })
+    body: JSON.stringify({ action: 'saveSettings', rate: rate, hours: hours, paidCarry: paidCarry, paidGrant: paidGrant })
   }).catch(function() {});
 }
 
-// 月データの読み込み
+function savePaidSettings() {
+  saveSettings();
+}
+
+// 全月の有給使用日数を集計するため全データを読み込む
+function loadAllPaidData() {
+  fetch(GAS_URL + '?action=loadAllPaid&year=' + currentYear)
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      allRecords = res.data || {};
+      loadFromStorage();
+    })
+    .catch(function() { loadFromStorage(); });
+}
+
+// 今年の有給使用合計を全月から計算
+function calcTotalPaidUsed() {
+  var total = 0;
+  for (var m = 0; m <= 11; m++) {
+    var monthData = allRecords[m] || {};
+    // 現在表示中の月は最新データを使う
+    if (m === currentMonth) monthData = records;
+    for (var key in monthData) {
+      if (monthData[key] && monthData[key].type === 'paid') total++;
+    }
+  }
+  return total;
+}
+
+function updatePaidDisplay() {
+  var carry = parseFloat(document.getElementById('paidCarry').value) || 0;
+  var grant = parseFloat(document.getElementById('paidGrant').value) || 0;
+  var total = carry + grant;
+  var used = calcTotalPaidUsed();
+  var remain = total - used;
+
+  document.getElementById('paidUsed').textContent = used;
+  var remainEl = document.getElementById('paidRemain');
+  remainEl.textContent = remain;
+  remainEl.className = 'paid-cell-val ' + (remain <= 0 ? 'danger' : remain <= 3 ? 'warn' : 'ok');
+}
+
 function loadFromStorage() {
   showToast('データを読み込み中...');
   fetch(GAS_URL + '?action=load&year=' + currentYear + '&month=' + currentMonth)
     .then(function(r) { return r.json(); })
     .then(function(res) {
       records = res.data || {};
+      allRecords[currentMonth] = records;
       render();
+      updatePaidDisplay();
       showToast('読み込み完了');
     })
     .catch(function() {
       records = {};
       render();
+      updatePaidDisplay();
       showToast('オフラインモードで表示中');
     });
 }
 
-// 月データの保存
 function saveToStorage() {
   if (saving) return;
   saving = true;
+  allRecords[currentMonth] = records;
   fetch(GAS_URL, {
     method: 'POST',
     body: JSON.stringify({ action: 'save', year: currentYear, month: currentMonth, records: records })
   })
-  .then(function() { saving = false; showToast('保存しました'); })
+  .then(function() { saving = false; showToast('保存しました'); updatePaidDisplay(); })
   .catch(function() { saving = false; showToast('保存に失敗しました'); });
 }
 
@@ -327,38 +378,28 @@ function calcDay(rec, stdH) {
 function applyBulk() {
   var newStart = document.getElementById('bulkStart').value.trim();
   var newEnd   = document.getElementById('bulkEnd').value.trim();
-  if (parseTime(newStart) === null || parseTime(newEnd) === null) {
-    showToast('時刻の形式が正しくありません（例: 08:30）');
-    return;
-  }
+  if (parseTime(newStart) === null || parseTime(newEnd) === null) { showToast('時刻の形式が正しくありません（例: 08:30）'); return; }
   var weekdayOnly = document.getElementById('bulkWeekday').checked;
   var skipNonWork = document.getElementById('bulkSkipHoliday').checked;
-  var days = getDaysInMonth(currentYear, currentMonth);
-  var count = 0;
+  var days = getDaysInMonth(currentYear, currentMonth), count = 0;
   for (var d = 1; d <= days; d++) {
     var dow = getDayOfWeek(currentYear, currentMonth, d);
     var isWeekend = dow === 0 || dow === 6;
     if (weekdayOnly && isWeekend) continue;
     var key = '' + d;
     if (!records[key]) records[key] = { type: isWeekend ? 'holiday' : 'work', start: '09:00', end: '18:00', break: '60', away: [] };
-    var rec = records[key];
-    if (skipNonWork && rec.type !== 'work') continue;
-    rec.start = newStart;
-    rec.end = newEnd;
-    count++;
+    if (skipNonWork && records[key].type !== 'work') continue;
+    records[key].start = newStart; records[key].end = newEnd; count++;
   }
-  saveToStorage();
-  render();
+  saveToStorage(); render();
   showToast(count + '日分を ' + newStart + '〜' + newEnd + ' に変更しました');
 }
 
 function showToast(msg) {
   var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(function() { t.classList.remove('show'); }, 2600);
 }
-
 function autoColon(input) {
   var v = input.value.replace(/[^0-9:]/g, '');
   if (v.length === 4 && !v.includes(':')) v = v.slice(0,2) + ':' + v.slice(2);
@@ -417,9 +458,9 @@ function render() {
     var startErr = rec.type === 'work' && rec.start && parseTime(rec.start) === null;
     var endErr   = rec.type === 'work' && rec.end   && parseTime(rec.end)   === null;
     var typeSel = '<select onchange="setField(' + d + ',\'type\',this.value)">'
-      + '<option value="work"' + (rec.type==='work'?' selected':'') + '>出勤</option>'
-      + '<option value="paid"' + (rec.type==='paid'?' selected':'') + '>有給</option>'
-      + '<option value="holiday"' + (rec.type==='holiday'?' selected':'') + '>休日</option>'
+      + '<option value="work"'    + (rec.type==='work'?    ' selected':'') + '>出勤</option>'
+      + '<option value="paid"'    + (rec.type==='paid'?    ' selected':'') + '>有給</option>'
+      + '<option value="holiday"' + (rec.type==='holiday'? ' selected':'') + '>休日</option>'
       + '</select>';
     var awayHtml = '<div class="away-wrap">';
     rec.away.forEach(function(a, i) {
@@ -475,8 +516,7 @@ function render() {
 
 document.addEventListener('input', function(e) {
   if (e.target.id === 'hourlyRate' || e.target.id === 'stdHours') {
-    saveSettings();
-    render();
+    saveSettings(); render();
   }
 });
 
