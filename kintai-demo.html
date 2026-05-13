@@ -97,6 +97,10 @@
     .hint { font-size: 11px; color: var(--text3); padding-left: 4px; }
     .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--text); color: var(--bg); font-size: 13px; padding: 9px 22px; border-radius: 20px; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; white-space: nowrap; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .reset-panel { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 18px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .reset-panel-text { font-size: 13px; color: var(--text2); }
+    .btn-reset { background: none; border: 0.5px solid var(--danger); border-radius: var(--radius); padding: 7px 18px; font-size: 13px; color: var(--danger); cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .btn-reset:hover { background: #fcebeb; }
   </style>
 </head>
 <body>
@@ -205,6 +209,18 @@
     </table>
   </div>
   <p class="hint">時刻は「HH:MM」形式で入力（例: 09:00、18:30）　離席は＋ボタンで複数追加できます</p>
+
+  <!-- リセットパネル -->
+  <div class="reset-panel">
+    <div class="reset-panel-text">
+      <strong>データをリセット</strong><br>
+      <span style="font-size:12px;">すべての勤怠・設定データを削除します。この操作は元に戻せません。</span>
+    </div>
+    <button class="btn-reset" onclick="resetAllData()">
+      <i class="ti ti-trash" style="font-size:15px;"></i> リセット
+    </button>
+  </div>
+
 </div>
 <div class="toast" id="toast"></div>
 
@@ -519,6 +535,25 @@ document.addEventListener('input', function(e) {
     saveSettings(); render();
   }
 });
+
+function resetAllData() {
+  if (!confirm('すべてのデータを削除します。この操作は元に戻せません。本当によいですか？')) return;
+  if (!confirm('本当に削除します。よろしいですか？')) return;
+  localStorage.removeItem('kintai_records');
+  localStorage.removeItem('kintai_settings');
+  localStorage.removeItem('kintai_paid');
+  records = {};
+  document.getElementById('hourlyRate').value = 1500;
+  document.getElementById('stdHours').value = 8;
+  document.getElementById('paidCarry').value = 0;
+  document.getElementById('paidGrant').value = 0;
+  saveToStorage();
+  saveSettings();
+  savePaidSettings();
+  render();
+  updatePaidDisplay();
+  showToast('リセットしました');
+}
 
 init();
 </script>
