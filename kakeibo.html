@@ -351,43 +351,53 @@ async function cloudSave() {
 }
 
 // クラウドから読込（設定＋当月データ）
-async function cloudLoad() {
+// silent=true: バックグラウンド同期（画面は差分がある時だけ更新）
+// silent=false: 手動読込（必ず再描画・ローディング表示あり）
+async function cloudLoad(silent=false) {
   try {
-    showSyncStatus('loading');
+    if (!silent) showSyncStatus('loading');
     // 設定読込
     const sr = await gasGet({ action: 'kakeiboLoadSettings' });
     if (sr.status === 'ok' && sr.data) {
       const d = sr.data;
-      S.income    = d.income    ?? S.income;
-      S.cats      = d.cats      ?? S.cats;
-      S.deds      = d.deds      ?? S.deds;
-      S.assets    = d.assets    ?? S.assets;
-      S.coins     = d.coins     ?? S.coins;
-      S.records   = d.records   ?? S.records;
-      S.gotItems  = d.gotItems  ?? S.gotItems;
-      S.theme     = d.theme     ?? S.theme;
+      S.income   = d.income   ?? S.income;
+      S.cats     = d.cats     ?? S.cats;
+      S.deds     = d.deds     ?? S.deds;
+      S.assets   = d.assets   ?? S.assets;
+      S.coins    = d.coins    ?? S.coins;
+      S.records  = d.records  ?? S.records;
+      S.gotItems = d.gotItems ?? S.gotItems;
+      S.theme    = d.theme    ?? S.theme;
     }
     // 当月データ読込
     const mr = await gasGet({ action: 'kakeiboLoadMonth', ym: S.month });
     if (mr.status === 'ok' && mr.data) {
       const d = mr.data;
-      // 今月分の支出を置き換え（他の月はそのまま残す）
+      const before = JSON.stringify(S.exps.filter(e => e.date.startsWith(S.month)));
       S.exps = [
         ...S.exps.filter(e => !e.date.startsWith(S.month)),
         ...(d.exps || []),
       ];
-      // 今月分のmanualPayを置き換え
       Object.keys(S.manualPay || {}).forEach(k => { if(k.startsWith(S.month)) delete S.manualPay[k]; });
       Object.assign(S.manualPay, d.manualPay || {});
+      // バックグラウンド時はデータが変わった時だけ再描画
+      const after = JSON.stringify(S.exps.filter(e => e.date.startsWith(S.month)));
+      if (!silent || before !== after) {
+        persist();
+        applyTheme();
+        setMonthLabel();
+        buildNav();
+        renderCurrent();
+      } else {
+        persist();
+      }
+    } else {
+      persist();
     }
-    persist();
-    applyTheme();
-    setMonthLabel();
-    buildNav();
-    renderCurrent();
-    showSyncStatus('loaded');
+    if (!silent) showSyncStatus('loaded');
+    else showSyncStatus('synced');
   } catch(e) {
-    showSyncStatus('error');
+    if (!silent) showSyncStatus('error');
     console.error('cloudLoad error:', e);
   }
 }
@@ -422,6 +432,7 @@ function showSyncStatus(status) {
     saved:   { text: '✅ 保存完了',  color: 'var(--green)' },
     loading: { text: '🔄 読込中...', color: 'var(--amber)' },
     loaded:  { text: '✅ 読込完了',  color: 'var(--green)' },
+    synced:  { text: '☁️ 同期済み',  color: 'var(--text3)' },
     error:   { text: '❌ 通信エラー', color: 'var(--red)'  },
   };
   const m = map[status] || {};
@@ -1556,11 +1567,20 @@ setMonthLabel();
 buildNav();
 renderCurrent();
 
-// 起動時にクラウドから読込
-cloudLoad();
+// 起動時の同期戦略:
+// ローカルにデータあり → 即表示してバックグラウンドで静かに同期
+// ローカルにデータなし → クラウドから読込（初回起動時のみ待つ）
+const hasLocalData = S.exps.length > 0 || S.cats.some(c => c.manual !== null);
+if (hasLocalData) {
+  // 即座に表示済み → バックグラウンドで同期（silent=true）
+  setTimeout(() => cloudLoad(true), 500);
+} else {
+  // データなし（初回）→ クラウドから読込
+  cloudLoad(false);
+}
 
-// 手動クラウド読込ボタン
-document.getElementById('btnCloudLoad').onclick = () => cloudLoad();
+// 手動クラウド読込ボタン（silent=false で必ず再描画）
+document.getElementById('btnCloudLoad').onclick = () => cloudLoad(false);
 </script>
 </body>
 </html>
