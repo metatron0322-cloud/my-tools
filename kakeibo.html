@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>家計簿</title>
+<title>こづかい帳</title>
 <style>
 :root{
   --bg:#f0f4ff;--surface:#fff;--surface2:#f7f8ff;
@@ -211,7 +211,7 @@ input[type=number].finp::-webkit-inner-spin-button{-webkit-appearance:none;margi
 <div class="toast" id="TOAST"></div>
 
 <div class="hdr">
-  <div class="logo">🏠 家計簿</div>
+  <div class="logo">🪙 こづかい帳</div>
   <div class="hdr-r">
     <div class="mo-nav">
       <button class="ibtn" id="btnPrevMonth">◀</button>
@@ -330,7 +330,6 @@ function gasGet(params) {
 function gasPost(body) {
   return fetch(GAS_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(body),
   }).then(r => r.json());
 }
@@ -351,53 +350,43 @@ async function cloudSave() {
 }
 
 // クラウドから読込（設定＋当月データ）
-// silent=true: バックグラウンド同期（画面は差分がある時だけ更新）
-// silent=false: 手動読込（必ず再描画・ローディング表示あり）
-async function cloudLoad(silent=false) {
+async function cloudLoad() {
   try {
-    if (!silent) showSyncStatus('loading');
+    showSyncStatus('loading');
     // 設定読込
     const sr = await gasGet({ action: 'kakeiboLoadSettings' });
     if (sr.status === 'ok' && sr.data) {
       const d = sr.data;
-      S.income   = d.income   ?? S.income;
-      S.cats     = d.cats     ?? S.cats;
-      S.deds     = d.deds     ?? S.deds;
-      S.assets   = d.assets   ?? S.assets;
-      S.coins    = d.coins    ?? S.coins;
-      S.records  = d.records  ?? S.records;
-      S.gotItems = d.gotItems ?? S.gotItems;
-      S.theme    = d.theme    ?? S.theme;
+      S.income    = d.income    ?? S.income;
+      S.cats      = d.cats      ?? S.cats;
+      S.deds      = d.deds      ?? S.deds;
+      S.assets    = d.assets    ?? S.assets;
+      S.coins     = d.coins     ?? S.coins;
+      S.records   = d.records   ?? S.records;
+      S.gotItems  = d.gotItems  ?? S.gotItems;
+      S.theme     = d.theme     ?? S.theme;
     }
     // 当月データ読込
     const mr = await gasGet({ action: 'kakeiboLoadMonth', ym: S.month });
     if (mr.status === 'ok' && mr.data) {
       const d = mr.data;
-      const before = JSON.stringify(S.exps.filter(e => e.date.startsWith(S.month)));
+      // 今月分の支出を置き換え（他の月はそのまま残す）
       S.exps = [
         ...S.exps.filter(e => !e.date.startsWith(S.month)),
         ...(d.exps || []),
       ];
+      // 今月分のmanualPayを置き換え
       Object.keys(S.manualPay || {}).forEach(k => { if(k.startsWith(S.month)) delete S.manualPay[k]; });
       Object.assign(S.manualPay, d.manualPay || {});
-      // バックグラウンド時はデータが変わった時だけ再描画
-      const after = JSON.stringify(S.exps.filter(e => e.date.startsWith(S.month)));
-      if (!silent || before !== after) {
-        persist();
-        applyTheme();
-        setMonthLabel();
-        buildNav();
-        renderCurrent();
-      } else {
-        persist();
-      }
-    } else {
-      persist();
     }
-    if (!silent) showSyncStatus('loaded');
-    else showSyncStatus('synced');
+    persist();
+    applyTheme();
+    setMonthLabel();
+    buildNav();
+    renderCurrent();
+    showSyncStatus('loaded');
   } catch(e) {
-    if (!silent) showSyncStatus('error');
+    showSyncStatus('error');
     console.error('cloudLoad error:', e);
   }
 }
@@ -432,7 +421,6 @@ function showSyncStatus(status) {
     saved:   { text: '✅ 保存完了',  color: 'var(--green)' },
     loading: { text: '🔄 読込中...', color: 'var(--amber)' },
     loaded:  { text: '✅ 読込完了',  color: 'var(--green)' },
-    synced:  { text: '☁️ 同期済み',  color: 'var(--text3)' },
     error:   { text: '❌ 通信エラー', color: 'var(--red)'  },
   };
   const m = map[status] || {};
@@ -1482,15 +1470,11 @@ function renderLogList(fc,fk,pg){
       </div>
       <div style="display:flex;align-items:center;gap:6px">
         <div style="font-size:13px;font-weight:900;color:var(--red)">-${yen(e.amt)}</div>
-        <button class="btn bsm" data-editexp="${e._i}" style="padding:3px 6px">✏️</button>
         <button class="btn bdng bsm" data-delexp="${e._i}" style="padding:3px 6px">🗑️</button>
       </div>
     </div>`;
   }).join('');
 
-  el.querySelectorAll('[data-editexp]').forEach(btn=>{
-    btn.onclick=()=>openEditExpModal(+btn.dataset.editexp);
-  });
   el.querySelectorAll('[data-delexp]').forEach(btn=>{
     btn.onclick=()=>{
       const i=+btn.dataset.delexp;
@@ -1498,59 +1482,6 @@ function renderLogList(fc,fk,pg){
       S.exps.splice(i,1); persist(); renderLog();
     };
   });
-}
-
-// 支出編集モーダル
-function openEditExpModal(idx){
-  const e=S.exps[idx];
-  if(!e) return;
-  const catOpts=S.cats.map(c=>`<option value="${c.name}"${c.name===e.cat?' selected':''}>${c.e} ${c.name}</option>`).join('');
-  openModal(`<div class="mdl">
-    <div class="mtitle">✏️ 支出を修正</div>
-    <div class="frow">
-      <div class="fg"><label class="flbl">カテゴリ</label>
-        <select id="EE_cat" class="finp">${catOpts}</select></div>
-      <div class="fg"><label class="flbl">支払い方法</label>
-        <select id="EE_card" class="finp">
-          <option value="r"${e.card==='r'?' selected':''}>💳 楽天カード</option>
-          <option value="a"${e.card==='a'?' selected':''}>💳 アメックス</option>
-          <option value="c"${e.card==='c'?' selected':''}>💴 現金・その他</option>
-        </select></div>
-    </div>
-    <div class="frow">
-      <div class="fg"><label class="flbl">金額（円）</label>
-        <input type="number" id="EE_amt" class="finp" value="${e.amt}"></div>
-      <div class="fg"><label class="flbl">日付</label>
-        <input type="date" id="EE_date" class="finp" value="${e.date}"></div>
-    </div>
-    <div class="fg"><label class="flbl">メモ（任意）</label>
-      <input type="text" id="EE_memo" class="finp" value="${e.memo||''}"></div>
-    <div class="mfoot">
-      <button class="btn bsm" id="EE_cancel">キャンセル</button>
-      <button class="btn bpri bsm" id="EE_save">✓ 保存</button>
-    </div>
-  </div>`);
-
-  document.getElementById('EE_cancel').onclick=closeModal;
-  document.getElementById('EE_save').onclick=function(){
-    const amt=parseInt(document.getElementById('EE_amt').value)||0;
-    const date=document.getElementById('EE_date').value;
-    if(amt<=0){toast('金額を入力してください');return;}
-    if(!date){toast('日付を入力してください');return;}
-    S.exps[idx]={
-      ...S.exps[idx],
-      cat:  document.getElementById('EE_cat').value,
-      card: document.getElementById('EE_card').value,
-      amt,
-      date,
-      memo: document.getElementById('EE_memo').value.trim(),
-    };
-    persist();
-    closeModal();
-    toast('支出を修正しました！');
-    renderLog();
-    if(curPage==='dashboard') renderDashboard();
-  };
 }
 
 // ─────────────────────────────────────────────
@@ -1567,20 +1498,11 @@ setMonthLabel();
 buildNav();
 renderCurrent();
 
-// 起動時の同期戦略:
-// ローカルにデータあり → 即表示してバックグラウンドで静かに同期
-// ローカルにデータなし → クラウドから読込（初回起動時のみ待つ）
-const hasLocalData = S.exps.length > 0 || S.cats.some(c => c.manual !== null);
-if (hasLocalData) {
-  // 即座に表示済み → バックグラウンドで同期（silent=true）
-  setTimeout(() => cloudLoad(true), 500);
-} else {
-  // データなし（初回）→ クラウドから読込
-  cloudLoad(false);
-}
+// 起動時にクラウドから読込
+cloudLoad();
 
-// 手動クラウド読込ボタン（silent=false で必ず再描画）
-document.getElementById('btnCloudLoad').onclick = () => cloudLoad(false);
+// 手動クラウド読込ボタン
+document.getElementById('btnCloudLoad').onclick = () => cloudLoad();
 </script>
 </body>
 </html>
