@@ -97,6 +97,292 @@
     .hint { font-size: 11px; color: var(--text3); padding-left: 4px; }
     .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--text); color: var(--bg); font-size: 13px; padding: 9px 22px; border-radius: 20px; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 100; white-space: nowrap; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* モバイル表示：テーブル行をタップ可能に */
+    @media (max-width: 640px) {
+      .table-wrap { display: none; }
+      .mobile-list { display: block; }
+      .hint { display: none; }
+    }
+    @media (min-width: 641px) {
+      .mobile-list { display: none; }
+    }
+
+    /* モバイル日付カードリスト */
+    .mobile-list { margin-bottom: 10px; }
+    .day-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .day-card:active { background: var(--bg2); }
+    .day-card.weekend { opacity: 0.55; }
+    .day-card.today { border-color: #378add; box-shadow: 0 0 0 1.5px #378add33; }
+    .day-card-date {
+      font-size: 15px;
+      font-weight: 500;
+      min-width: 72px;
+      color: var(--text);
+    }
+    .day-card-date .dow-sun { color: var(--danger); }
+    .day-card-date .dow-sat { color: #378add; }
+    .day-card-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+      margin-right: 10px;
+    }
+    .badge-work { background: #e8f4ff; color: #1a6fb0; }
+    .badge-paid { background: #e8f7f0; color: #1d9e75; }
+    .badge-holiday { background: var(--bg2); color: var(--text3); }
+    @media (prefers-color-scheme: dark) {
+      .badge-work { background: #1a3a5c; color: #6ab4f0; }
+      .badge-paid { background: #1a3d30; color: #4ccf97; }
+    }
+    .day-card-times {
+      flex: 1;
+      font-size: 13px;
+      color: var(--text2);
+    }
+    .day-card-ot {
+      font-size: 12px;
+      color: var(--danger);
+      font-weight: 500;
+      margin-left: 8px;
+    }
+    .day-card-arrow {
+      font-size: 16px;
+      color: var(--text3);
+      margin-left: 8px;
+    }
+
+    /* ポップアップ */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 200;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .popup-overlay.open {
+      display: flex;
+    }
+    .popup-sheet {
+      background: var(--bg);
+      width: 100%;
+      max-width: 500px;
+      border-radius: 20px 20px 0 0;
+      padding: 0 0 max(env(safe-area-inset-bottom), 16px) 0;
+      max-height: 92vh;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(.32,1,.46,1);
+    }
+    .popup-overlay.open .popup-sheet {
+      transform: translateY(0);
+    }
+    .popup-handle {
+      width: 36px; height: 4px;
+      background: var(--border2);
+      border-radius: 2px;
+      margin: 12px auto 0;
+    }
+    .popup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px 0;
+    }
+    .popup-title { font-size: 17px; font-weight: 600; color: var(--text); }
+    .popup-date-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .popup-close {
+      background: var(--bg2);
+      border: none;
+      border-radius: 50%;
+      width: 30px; height: 30px;
+      font-size: 16px;
+      color: var(--text2);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-family: inherit;
+    }
+    .popup-body { padding: 16px 20px; }
+    .popup-field { margin-bottom: 16px; }
+    .popup-field-label {
+      font-size: 12px;
+      color: var(--text2);
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .popup-type-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .type-btn {
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text2);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .type-btn.active-work { background: #e8f4ff; border-color: #378add; color: #1a6fb0; }
+    .type-btn.active-paid { background: #e8f7f0; border-color: var(--green); color: var(--green); }
+    .type-btn.active-holiday { background: var(--bg3); border-color: var(--border2); color: var(--text); }
+    @media (prefers-color-scheme: dark) {
+      .type-btn.active-work { background: #1a3a5c; border-color: #4a9ad4; color: #6ab4f0; }
+      .type-btn.active-paid { background: #1a3d30; border-color: #1d9e75; color: #4ccf97; }
+    }
+    .popup-time-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .popup-time-input {
+      flex: 1;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-size: 20px;
+      font-family: monospace;
+      background: var(--bg);
+      color: var(--text);
+      text-align: center;
+      letter-spacing: 2px;
+    }
+    .popup-time-input:focus { outline: none; box-shadow: 0 0 0 2px #378add44; border-color: #378add; }
+    .popup-time-input.error { border-color: var(--danger); }
+    .popup-time-sep { font-size: 20px; color: var(--text3); font-weight: 300; }
+    .popup-break-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .break-chip {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 7px 16px;
+      font-size: 13px;
+      color: var(--text2);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .break-chip.active { background: #378add; border-color: #378add; color: #fff; }
+    .break-custom-wrap { display: flex; align-items: center; gap: 6px; }
+    .break-custom-input {
+      width: 64px;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 7px 8px;
+      font-size: 14px;
+      background: var(--bg);
+      color: var(--text);
+      text-align: center;
+    }
+    .break-custom-input:focus { outline: none; box-shadow: 0 0 0 2px #378add44; }
+    .popup-away-list { margin-bottom: 8px; }
+    .popup-away-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .popup-away-input {
+      flex: 1;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 9px 10px;
+      font-size: 16px;
+      font-family: monospace;
+      background: var(--bg);
+      color: var(--text);
+      text-align: center;
+    }
+    .popup-away-input:focus { outline: none; box-shadow: 0 0 0 2px #378add44; }
+    .popup-away-input.error { border-color: var(--danger); }
+    .btn-popup-del {
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      color: var(--danger);
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .btn-popup-add-away {
+      background: var(--bg2);
+      border: 1px dashed var(--border2);
+      border-radius: var(--radius);
+      padding: 9px 16px;
+      font-size: 13px;
+      color: var(--text2);
+      cursor: pointer;
+      width: 100%;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .popup-memo-input {
+      width: 100%;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text);
+      resize: none;
+      min-height: 64px;
+    }
+    .popup-memo-input:focus { outline: none; box-shadow: 0 0 0 2px #378add44; }
+    .popup-footer {
+      padding: 0 20px 8px;
+      display: flex;
+      gap: 10px;
+    }
+    .btn-popup-save {
+      flex: 1;
+      background: #378add;
+      border: none;
+      border-radius: var(--radius);
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-popup-save:active { filter: brightness(0.92); }
+    .popup-work-section { animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .divider { height: 0.5px; background: var(--border); margin: 0 0 16px; }
+    /* メモ列（テーブル表示） */
+    .memo-input-sm { width: 100px; border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 3px 5px; font-size: 11px; background: var(--bg); color: var(--text); font-family: inherit; }
+    .memo-input-sm:focus { outline: none; box-shadow: 0 0 0 2px #378add44; }
   </style>
 </head>
 <body>
@@ -199,13 +485,82 @@
           <th>離席（開始〜終了）</th>
           <th style="width:74px;">勤務時間</th>
           <th style="width:68px;">残業</th>
+          <th style="width:100px;">備考</th>
         </tr>
       </thead>
       <tbody id="tableBody"></tbody>
     </table>
   </div>
   <p class="hint">時刻は「HH:MM」形式で入力（例: 09:00、18:30）　離席は＋ボタンで複数追加できます</p>
+
+  <!-- モバイル用カードリスト -->
+  <div class="mobile-list" id="mobileList"></div>
 </div>
+
+<!-- モバイル入力ポップアップ -->
+<div class="popup-overlay" id="popupOverlay" onclick="closePopupOnOverlay(event)">
+  <div class="popup-sheet" id="popupSheet">
+    <div class="popup-handle"></div>
+    <div class="popup-header">
+      <div>
+        <div class="popup-title" id="popupTitle"></div>
+        <div class="popup-date-sub" id="popupDateSub"></div>
+      </div>
+      <button class="popup-close" onclick="closePopup()">✕</button>
+    </div>
+    <div class="popup-body">
+      <div class="popup-field">
+        <div class="popup-field-label"><i class="ti ti-tag" style="font-size:14px;"></i>勤務種別</div>
+        <div class="popup-type-grid">
+          <button class="type-btn" id="typeBtnWork" onclick="popupSetType('work')">出勤</button>
+          <button class="type-btn" id="typeBtnPaid" onclick="popupSetType('paid')">有給</button>
+          <button class="type-btn" id="typeBtnHoliday" onclick="popupSetType('holiday')">休日</button>
+        </div>
+      </div>
+      <div id="popupWorkSection" class="popup-work-section">
+        <div class="divider"></div>
+        <div class="popup-field">
+          <div class="popup-field-label"><i class="ti ti-clock" style="font-size:14px;"></i>出退勤時刻</div>
+          <div class="popup-time-row">
+            <input class="popup-time-input" type="text" id="popupStart" placeholder="09:00" maxlength="5" oninput="autoColon(this)">
+            <span class="popup-time-sep">→</span>
+            <input class="popup-time-input" type="text" id="popupEnd" placeholder="18:00" maxlength="5" oninput="autoColon(this)">
+          </div>
+        </div>
+        <div class="popup-field">
+          <div class="popup-field-label"><i class="ti ti-coffee" style="font-size:14px;"></i>休憩時間</div>
+          <div class="popup-break-row" id="popupBreakChips">
+            <button class="break-chip" data-val="0" onclick="selectBreakChip(this)">なし</button>
+            <button class="break-chip" data-val="30" onclick="selectBreakChip(this)">30分</button>
+            <button class="break-chip" data-val="45" onclick="selectBreakChip(this)">45分</button>
+            <button class="break-chip" data-val="60" onclick="selectBreakChip(this)">60分</button>
+            <button class="break-chip" data-val="90" onclick="selectBreakChip(this)">90分</button>
+            <div class="break-custom-wrap">
+              <input class="break-custom-input" type="number" id="popupBreakCustom" min="0" max="240" step="5" placeholder="他" oninput="onBreakCustomInput(this)">
+              <span style="font-size:12px;color:var(--text3)">分</span>
+            </div>
+          </div>
+        </div>
+        <div class="popup-field">
+          <div class="popup-field-label"><i class="ti ti-walk" style="font-size:14px;"></i>離席時間</div>
+          <div class="popup-away-list" id="popupAwayList"></div>
+          <button class="btn-popup-add-away" onclick="popupAddAway()">
+            <i class="ti ti-plus" style="font-size:13px;"></i> 離席時間を追加
+          </button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="popup-field">
+        <div class="popup-field-label"><i class="ti ti-notes" style="font-size:14px;"></i>備考・メモ</div>
+        <textarea class="popup-memo-input" id="popupMemo" placeholder="例：テレワーク、出張など" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="popup-footer">
+      <button class="btn-popup-save" onclick="savePopup()"><i class="ti ti-device-floppy" style="font-size:15px; vertical-align:-2px; margin-right:6px;"></i>保存する</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -550,6 +905,7 @@ function render() {
     awayHtml += '<button class="btn-add-away" onclick="addAway(' + d + ')"><i class="ti ti-plus" style="font-size:11px;"></i> 追加</button></div>';
     var tr = document.createElement('tr');
     if (isWeekend && rec.type !== 'work') tr.style.opacity = '0.5';
+    var memoVal = rec.memo || '';
     if (rec.type === 'work') {
       tr.innerHTML = '<td>' + (currentMonth+1) + '/' + d + '(' + dowLabels[dow] + ')</td>'
         + '<td>' + typeSel + '</td>'
@@ -561,13 +917,17 @@ function render() {
         + ' onchange="setField(' + d + ',\'break\',this.value)"></td>'
         + '<td>' + awayHtml + '</td>'
         + '<td>' + fmtWorkTime(res.work) + '</td>'
-        + '<td>' + (res.ot > 0 ? '<span class="overtime-cell">' + fmtOT(res.ot) + '</span>' : '-') + '</td>';
+        + '<td>' + (res.ot > 0 ? '<span class="overtime-cell">' + fmtOT(res.ot) + '</span>' : '-') + '</td>'
+        + '<td><input class="memo-input-sm" type="text" value="' + memoVal.replace(/"/g,'&quot;') + '" placeholder="備考"'
+        + ' onblur="setField(' + d + ',\'memo\',this.value)"></td>';
     } else {
       tr.innerHTML = '<td>' + (currentMonth+1) + '/' + d + '(' + dowLabels[dow] + ')</td>'
         + '<td>' + typeSel + '</td>'
         + '<td colspan="4" style="color:var(--text3); font-size:11px; text-align:center;">-</td>'
         + '<td>' + (rec.type==='paid' ? fmtWorkTime(Math.round(stdH*60)) : '-') + '</td>'
-        + '<td>-</td>';
+        + '<td>-</td>'
+        + '<td><input class="memo-input-sm" type="text" value="' + memoVal.replace(/"/g,'&quot;') + '" placeholder="備考"'
+        + ' onblur="setField(' + d + ',\'memo\',this.value)"></td>';
     }
     tbody.appendChild(tr);
   }
@@ -583,7 +943,207 @@ function render() {
   bar.style.width = pct + '%';
   bar.className = 'bar-fill' + (pct >= 80 ? ' danger' : pct >= 50 ? ' warn' : '');
   document.getElementById('otBarLabel').textContent = otLabel + ' / 45時間 (' + pct.toFixed(0) + '%)';
+
+  renderMobile();
 }
+
+// ============================================================
+// モバイル用カードリスト
+// ============================================================
+function renderMobile() {
+  var mobileList = document.getElementById('mobileList');
+  if (!mobileList) return;
+  var days = getDaysInMonth(currentYear, currentMonth);
+  var stdH = parseFloat(document.getElementById('stdHours').value || 8);
+  var dowLabels = ['日','月','火','水','木','金','土'];
+  var today = new Date();
+  var todayKey = (today.getFullYear() === currentYear && today.getMonth() === currentMonth) ? today.getDate() : -1;
+  var html = '';
+
+  for (var d = 1; d <= days; d++) {
+    var dow = getDayOfWeek(currentYear, currentMonth, d);
+    var isWeekend = dow === 0 || dow === 6;
+    var key = '' + d;
+    var rec = records[key] || { type: isWeekend ? 'holiday' : 'work' };
+    var res = calcDay(rec, stdH);
+
+    var dowLabel = dowLabels[dow];
+    var dowClass = dow === 0 ? 'dow-sun' : dow === 6 ? 'dow-sat' : '';
+    var cardClass = 'day-card' + (isWeekend && rec.type !== 'work' ? ' weekend' : '') + (d === todayKey ? ' today' : '');
+
+    var badgeClass = rec.type === 'work' ? 'badge-work' : rec.type === 'paid' ? 'badge-paid' : 'badge-holiday';
+    var badgeLabel = rec.type === 'work' ? '出勤' : rec.type === 'paid' ? '有給' : '休日';
+
+    var timesText = '';
+    if (rec.type === 'work' && rec.start && rec.end) {
+      timesText = rec.start + ' → ' + rec.end;
+      if (rec.memo) timesText += ' <span style="color:var(--text3)">| ' + rec.memo + '</span>';
+    } else if (rec.type === 'paid') {
+      timesText = rec.memo || '有給休暇';
+    } else {
+      timesText = rec.memo || '';
+    }
+
+    var otHtml = (res.ot > 0) ? '<span class="day-card-ot">' + fmtOT(res.ot) + '</span>' : '';
+
+    html += '<div class="' + cardClass + '" onclick="openPopup(' + d + ')">'
+      + '<div class="day-card-date">' + (currentMonth+1) + '/<strong>' + d + '</strong><span class="' + dowClass + '">（' + dowLabel + '）</span></div>'
+      + '<span class="day-card-badge ' + badgeClass + '">' + badgeLabel + '</span>'
+      + '<div class="day-card-times">' + timesText + '</div>'
+      + otHtml
+      + '<span class="day-card-arrow">›</span>'
+      + '</div>';
+  }
+  mobileList.innerHTML = html;
+}
+
+// ============================================================
+// ポップアップ
+// ============================================================
+var popupDay = null;
+var popupType = 'work';
+var popupAway = [];
+
+function openPopup(d) {
+  popupDay = d;
+  var dow = getDayOfWeek(currentYear, currentMonth, d);
+  var isWeekend = dow === 0 || dow === 6;
+  var dowLabels = ['日','月','火','水','木','金','土'];
+  var months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  var key = '' + d;
+  if (!records[key]) records[key] = { type: isWeekend ? 'holiday' : 'work', start: '09:00', end: '18:00', break: '60', away: [], memo: '' };
+  var rec = records[key];
+
+  document.getElementById('popupTitle').textContent = (currentMonth+1) + '月' + d + '日（' + dowLabels[dow] + '）';
+  document.getElementById('popupDateSub').textContent = currentYear + '年 ' + months[currentMonth];
+
+  popupType = rec.type || 'work';
+  popupAway = JSON.parse(JSON.stringify(rec.away || []));
+
+  popupSetType(popupType, true);
+  document.getElementById('popupStart').value = rec.start || '09:00';
+  document.getElementById('popupEnd').value = rec.end || '18:00';
+  document.getElementById('popupMemo').value = rec.memo || '';
+
+  var brk = parseInt(rec.break || 60);
+  setBreakChipValue(brk);
+
+  renderPopupAway();
+
+  var overlay = document.getElementById('popupOverlay');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(function() {
+    if (popupType === 'work') document.getElementById('popupStart').focus();
+  }, 320);
+}
+
+function closePopup() {
+  document.getElementById('popupOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closePopupOnOverlay(e) {
+  if (e.target === document.getElementById('popupOverlay')) closePopup();
+}
+
+function popupSetType(type, silent) {
+  popupType = type;
+  document.getElementById('typeBtnWork').className = 'type-btn' + (type === 'work' ? ' active-work' : '');
+  document.getElementById('typeBtnPaid').className = 'type-btn' + (type === 'paid' ? ' active-paid' : '');
+  document.getElementById('typeBtnHoliday').className = 'type-btn' + (type === 'holiday' ? ' active-holiday' : '');
+  var ws = document.getElementById('popupWorkSection');
+  ws.style.display = type === 'work' ? '' : 'none';
+}
+
+function setBreakChipValue(val) {
+  var chips = document.querySelectorAll('.break-chip');
+  var matched = false;
+  chips.forEach(function(c) {
+    var cv = parseInt(c.getAttribute('data-val'));
+    if (cv === val) { c.classList.add('active'); matched = true; }
+    else c.classList.remove('active');
+  });
+  if (!matched) {
+    document.getElementById('popupBreakCustom').value = val;
+  } else {
+    document.getElementById('popupBreakCustom').value = '';
+  }
+}
+
+function selectBreakChip(btn) {
+  document.querySelectorAll('.break-chip').forEach(function(c) { c.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('popupBreakCustom').value = '';
+}
+
+function onBreakCustomInput(input) {
+  document.querySelectorAll('.break-chip').forEach(function(c) { c.classList.remove('active'); });
+}
+
+function getPopupBreakValue() {
+  var custom = document.getElementById('popupBreakCustom').value;
+  if (custom !== '' && custom !== null) {
+    var cv = parseInt(custom);
+    if (!isNaN(cv)) return cv;
+  }
+  var active = document.querySelector('.break-chip.active');
+  if (active) return parseInt(active.getAttribute('data-val'));
+  return 60;
+}
+
+function renderPopupAway() {
+  var list = document.getElementById('popupAwayList');
+  var html = '';
+  popupAway.forEach(function(a, i) {
+    var asErr = a.start && parseTime(a.start) === null;
+    var aeErr = a.end && parseTime(a.end) === null;
+    html += '<div class="popup-away-row">'
+      + '<input class="popup-away-input' + (asErr?' error':'') + '" type="text" value="' + (a.start||'') + '" placeholder="12:00" maxlength="5" oninput="autoColon(this)" onblur="popupSetAway(' + i + ',\'start\',this.value)">'
+      + '<span style="color:var(--text3);font-size:16px;">〜</span>'
+      + '<input class="popup-away-input' + (aeErr?' error':'') + '" type="text" value="' + (a.end||'') + '" placeholder="13:00" maxlength="5" oninput="autoColon(this)" onblur="popupSetAway(' + i + ',\'end\',this.value)">'
+      + '<button class="btn-popup-del" onclick="popupDelAway(' + i + ')">×</button>'
+      + '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function popupAddAway() {
+  popupAway.push({ start: '', end: '' });
+  renderPopupAway();
+}
+function popupDelAway(i) {
+  popupAway.splice(i, 1);
+  renderPopupAway();
+}
+function popupSetAway(i, field, val) {
+  if (popupAway[i]) popupAway[i][field] = val.trim();
+}
+
+function savePopup() {
+  if (popupDay === null) return;
+  var key = '' + popupDay;
+  if (!records[key]) records[key] = {};
+  var rec = records[key];
+  rec.type = popupType;
+  rec.memo = document.getElementById('popupMemo').value;
+  if (popupType === 'work') {
+    var s = document.getElementById('popupStart').value.trim();
+    var e = document.getElementById('popupEnd').value.trim();
+    if (s && parseTime(s) === null) { showToast('開始時刻の形式が正しくありません'); return; }
+    if (e && parseTime(e) === null) { showToast('終了時刻の形式が正しくありません'); return; }
+    rec.start = s;
+    rec.end = e;
+    rec.break = '' + getPopupBreakValue();
+    rec.away = popupAway.filter(function(a) { return a.start || a.end; });
+  }
+  saveToStorage();
+  closePopup();
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closePopup();
+});
 
 document.addEventListener('input', function(e) {
   if (e.target.id === 'hourlyRate' || e.target.id === 'stdHours') {
