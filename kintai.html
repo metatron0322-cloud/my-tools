@@ -214,16 +214,64 @@ var currentYear, currentMonth;
 var records = {};
 var allRecords = {}; // 全月データキャッシュ（有給集計用）
 var saving = false;
+var LOCAL_KEY = 'kintai_cache'; // localStorageキャッシュのキー
+
+// ローカルキャッシュから読み込む
+function loadLocalCache() {
+  try {
+    var cache = JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}');
+    return cache;
+  } catch(e) { return {}; }
+}
+
+// ローカルキャッシュに保存する
+function saveLocalCache(year, month, data, settings) {
+  try {
+    var cache = loadLocalCache();
+    var key = year + '_' + month;
+    cache[key] = data;
+    if (settings) cache['settings'] = settings;
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(cache));
+  } catch(e) {}
+}
+
+// GASウォームアップ（コールドスタート対策）
+function gasWarmup() {
+  fetch(GAS_URL + '?action=ping').catch(function() {});
+}
 
 function init() {
   var now = new Date();
   currentYear = now.getFullYear();
   currentMonth = now.getMonth();
-  loadSettings();
+
+  // まずローカルキャッシュで即表示
+  var cache = loadLocalCache();
+  var cacheKey = currentYear + '_' + currentMonth;
+  if (cache[cacheKey]) {
+    records = cache[cacheKey];
+    allRecords[currentMonth] = records;
+  }
+  if (cache['settings']) {
+    var s = cache['settings'];
+    if (s.rate) document.getElementById('hourlyRate').value = s.rate;
+    if (s.hours) document.getElementById('stdHours').value = s.hours;
+    if (s.paidCarry !== undefined) document.getElementById('paidCarry').value = s.paidCarry;
+    if (s.paidGrant !== undefined) document.getElementById('paidGrant').value = s.paidGrant;
+  }
+  // ローカルデータがあれば即レンダリング
+  if (cache[cacheKey] || cache['settings']) {
+    render();
+    updatePaidDisplay();
+  }
+
+  // GASをウォームアップしてからバックグラウンドで最新データ取得
+  gasWarmup();
+  setTimeout(function() { loadSettings(!!cache[cacheKey]); }, 200);
 }
 
-function loadSettings() {
-  showToast('データを読み込み中...');
+function loadSettings(silent) {
+  if (!silent) showToast('データを読み込み中...');
   fetch(GAS_URL + '?action=loadSettings')
     .then(function(r) { return r.json(); })
     .then(function(res) {
@@ -232,10 +280,14 @@ function loadSettings() {
         if (res.settings.hours) document.getElementById('stdHours').value = res.settings.hours;
         if (res.settings.paidCarry !== undefined) document.getElementById('paidCarry').value = res.settings.paidCarry;
         if (res.settings.paidGrant !== undefined) document.getElementById('paidGrant').value = res.settings.paidGrant;
+        // 設定をキャッシュに保存
+        saveLocalCache(currentYear, currentMonth, null, res.settings);
       }
-      loadAllPaidData();
+      loadAllPaidData(silent);
     })
-    .catch(function() { loadFromStorage(); });
+    .catch(function() {
+      if (!silent) loadFromStorage(false);
+    });
 }
 
 function saveSettings() {
@@ -254,14 +306,14 @@ function savePaidSettings() {
 }
 
 // 全月の有給使用日数を集計するため全データを読み込む
-function loadAllPaidData() {
+function loadAllPaidData(silent) {
   fetch(GAS_URL + '?action=loadAllPaid&year=' + currentYear)
     .then(function(r) { return r.json(); })
     .then(function(res) {
       allRecords = res.data || {};
-      loadFromStorage();
+      loadFromStorage(silent);
     })
-    .catch(function() { loadFromStorage(); });
+    .catch(function() { loadFromStorage(false); });
 }
 
 // 今年の有給使用合計を全月から計算
@@ -291,22 +343,26 @@ function updatePaidDisplay() {
   remainEl.className = 'paid-cell-val ' + (remain <= 0 ? 'danger' : remain <= 3 ? 'warn' : 'ok');
 }
 
-function loadFromStorage() {
-  showToast('データを読み込み中...');
+function loadFromStorage(silent) {
+  if (!silent) showToast('データを読み込み中...');
   fetch(GAS_URL + '?action=load&year=' + currentYear + '&month=' + currentMonth)
     .then(function(r) { return r.json(); })
     .then(function(res) {
       records = res.data || {};
       allRecords[currentMonth] = records;
+      // ローカルキャッシュに保存（次回起動時の即表示用）
+      saveLocalCache(currentYear, currentMonth, records);
       render();
       updatePaidDisplay();
-      showToast('読み込み完了');
+      if (!silent) showToast('読み込み完了');
     })
     .catch(function() {
-      records = {};
-      render();
-      updatePaidDisplay();
-      showToast('オフラインモードで表示中');
+      if (!records || Object.keys(records).length === 0) {
+        records = {};
+        render();
+        updatePaidDisplay();
+      }
+      if (!silent) showToast('オフラインモードで表示中');
     });
 }
 
@@ -314,6 +370,8 @@ function saveToStorage() {
   if (saving) return;
   saving = true;
   allRecords[currentMonth] = records;
+  // まずローカルキャッシュに即保存（体感速度アップ）
+  saveLocalCache(currentYear, currentMonth, records);
   fetch(GAS_URL, {
     method: 'POST',
     body: JSON.stringify({ action: 'save', year: currentYear, month: currentMonth, records: records })
@@ -326,7 +384,20 @@ function changeMonth(d) {
   currentMonth += d;
   if (currentMonth > 11) { currentMonth = 0; currentYear++; }
   if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-  loadFromStorage();
+
+  // ローカルキャッシュがあれば即表示
+  var cache = loadLocalCache();
+  var cacheKey = currentYear + '_' + currentMonth;
+  if (cache[cacheKey]) {
+    records = cache[cacheKey];
+    allRecords[currentMonth] = records;
+    render();
+    updatePaidDisplay();
+    // バックグラウンドで最新データ取得
+    loadFromStorage(true);
+  } else {
+    loadFromStorage(false);
+  }
 }
 
 function getDaysInMonth(y, m) { return new Date(y, m+1, 0).getDate(); }
