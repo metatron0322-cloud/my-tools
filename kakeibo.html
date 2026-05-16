@@ -444,6 +444,15 @@ function showSyncStatus(status) {
   }
 }
 
+
+// ─────────────────────────────────────────────
+// GAS ウォームアップ（コールドスタート対策）
+// アプリ表示直後に軽量pingを送りGASを起こしておく
+// ─────────────────────────────────────────────
+function gasWarmup() {
+  fetch(GAS_URL + '?action=ping').catch(() => {});
+}
+
 // ─────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────
@@ -463,10 +472,10 @@ function defaultState(){
 let S;
 try{ S=JSON.parse(localStorage.getItem('kakeibo7')||'null')||defaultState(); }
 catch(e){ S=defaultState(); }
-function persist(){
+function persist(syncCloud=false){
   try{ localStorage.setItem('kakeibo7', JSON.stringify(S)); } catch(e) {}
-  // クラウドへも自動保存（非同期・エラーは無視）
-  if(typeof cloudSave === 'function') cloudSave().catch(()=>{});
+  // syncCloud=trueの時だけクラウド保存（支出追加・編集時のみ）
+  if(syncCloud && typeof cloudSave === 'function') cloudSave().catch(()=>{});
 }
 
 // ─────────────────────────────────────────────
@@ -525,13 +534,13 @@ function setMonthLabel(){
 }
 document.getElementById('btnPrevMonth').onclick=async ()=>{
   S.month=prevYM(S.month);setMonthLabel();
-  await cloudLoadMonth(S.month);
-  renderCurrent();
+  renderCurrent(); // ローカルデータで即表示
+  cloudLoadMonth(S.month).then(()=>renderCurrent()); // バックグラウンドで同期後に再描画
 };
 document.getElementById('btnNextMonth').onclick=async ()=>{
   S.month=nextYM(S.month);setMonthLabel();
-  await cloudLoadMonth(S.month);
-  renderCurrent();
+  renderCurrent(); // ローカルデータで即表示
+  cloudLoadMonth(S.month).then(()=>renderCurrent()); // バックグラウンドで同期後に再描画
 };
 
 // ─────────────────────────────────────────────
@@ -1573,7 +1582,7 @@ renderCurrent();
 const hasLocalData = S.exps.length > 0 || S.cats.some(c => c.manual !== null);
 if (hasLocalData) {
   // 即座に表示済み → バックグラウンドで同期（silent=true）
-  setTimeout(() => cloudLoad(true), 500);
+  setTimeout(() => cloudLoad(true), 200);
 } else {
   // データなし（初回）→ クラウドから読込
   cloudLoad(false);
