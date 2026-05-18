@@ -390,15 +390,13 @@
     /* 前半/後半サマリー */
     .half-summary { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; margin-bottom: 14px; }
     .half-summary-title { font-size: 12px; color: var(--text2); font-weight: 500; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-    .half-cols { display: flex; gap: 8px; }
-    .half-label-col { flex: 0 0 auto; display: flex; flex-direction: column; gap: 0; }
-    .half-val-col { flex: 1; display: flex; flex-direction: column; gap: 0; min-width: 0; }
-    .half-col-head { font-size: 11px; color: var(--text3); font-weight: 500; padding-bottom: 6px; text-align: center; line-height: 1.4; }
-    .half-label-cell { font-size: 11px; color: var(--text2); padding: 5px 0; border-top: 0.5px solid var(--border); white-space: nowrap; line-height: 1.4; }
-    .half-val-cell { font-size: 13px; font-weight: 500; color: var(--text); padding: 5px 4px; border-top: 0.5px solid var(--border); text-align: right; white-space: nowrap; overflow: hidden; line-height: 1.4; }
-    .half-val-cell.ot { color: var(--danger); }
-    .half-first-row .half-label-cell,
-    .half-first-row .half-val-cell { border-top: none; }
+    .half-grid3 { display: grid; grid-template-columns: auto 1fr 1fr; align-items: center; }
+    .half-grid3 > div { padding: 6px 4px; font-size: 13px; }
+    .half-grid3 > div.hg-head { font-size: 11px; color: var(--text3); font-weight: 500; text-align: center; padding-bottom: 8px; line-height: 1.5; border-bottom: 0.5px solid var(--border); }
+    .half-grid3 > div.hg-head:first-child { border-bottom-color: transparent; }
+    .half-grid3 > div.hg-label { font-size: 11px; color: var(--text2); white-space: nowrap; padding-right: 10px; border-top: 0.5px solid var(--border); }
+    .half-grid3 > div.hg-val { font-weight: 500; color: var(--text); text-align: right; white-space: nowrap; border-top: 0.5px solid var(--border); }
+    .half-grid3 > div.hg-val.ot { color: var(--danger); }
   </style>
 </head>
 <body>
@@ -484,28 +482,14 @@
   <!-- 前半/後半サマリー -->
   <div class="half-summary">
     <div class="half-summary-title"><i class="ti ti-layout-columns" style="font-size:14px;"></i>前半・後半の内訳</div>
-    <div class="half-cols">
-      <div class="half-label-col">
-        <div class="half-col-head" style="visibility:hidden">-</div>
-        <div class="half-label-cell half-first-row">出勤日数</div>
-        <div class="half-label-cell">有給日数</div>
-        <div class="half-label-cell">時間内</div>
-        <div class="half-label-cell">時間外</div>
-      </div>
-      <div class="half-val-col">
-        <div class="half-col-head">前半<br><span style="font-weight:400">1〜15日</span></div>
-        <div class="half-val-cell half-first-row" id="h1Days">-</div>
-        <div class="half-val-cell" id="h1Paid">-</div>
-        <div class="half-val-cell" id="h1Std">-</div>
-        <div class="half-val-cell ot" id="h1OT">-</div>
-      </div>
-      <div class="half-val-col">
-        <div class="half-col-head">後半<br><span style="font-weight:400">16日〜</span></div>
-        <div class="half-val-cell half-first-row" id="h2Days">-</div>
-        <div class="half-val-cell" id="h2Paid">-</div>
-        <div class="half-val-cell" id="h2Std">-</div>
-        <div class="half-val-cell ot" id="h2OT">-</div>
-      </div>
+    <div class="half-grid3">
+      <div class="hg-head"></div>
+      <div class="hg-head">前半<br><span style="font-size:10px;font-weight:400">1〜15日</span></div>
+      <div class="hg-head">後半<br><span style="font-size:10px;font-weight:400">16日〜</span></div>
+      <div class="hg-label">出勤日数</div><div class="hg-val" id="h1Days">-</div><div class="hg-val" id="h2Days">-</div>
+      <div class="hg-label">有給日数</div><div class="hg-val" id="h1Paid">-</div><div class="hg-val" id="h2Paid">-</div>
+      <div class="hg-label">時間内</div><div class="hg-val" id="h1Std">-</div><div class="hg-val" id="h2Std">-</div>
+      <div class="hg-label">時間外</div><div class="hg-val ot" id="h1OT">-</div><div class="hg-val ot" id="h2OT">-</div>
     </div>
   </div>
   <div class="card">
