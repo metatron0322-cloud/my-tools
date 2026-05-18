@@ -393,6 +393,7 @@
     .half-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .half-card { background: var(--bg2); border-radius: var(--radius); padding: 10px 14px; }
     .half-card-title { font-size: 11px; color: var(--text3); margin-bottom: 8px; font-weight: 500; letter-spacing: 0.3px; }
+    .half-divider { height: 0.5px; background: var(--border); margin: 6px 0; }
     .half-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
     .half-row:last-child { margin-bottom: 0; }
     .half-row-label { font-size: 11px; color: var(--text2); }
@@ -487,14 +488,18 @@
       <div class="half-card">
         <div class="half-card-title">前半（1〜15日）</div>
         <div class="half-row"><span class="half-row-label">出勤日数</span><span class="half-row-val" id="h1Days">-</span></div>
-        <div class="half-row"><span class="half-row-label">勤務時間</span><span class="half-row-val" id="h1Work">-</span></div>
-        <div class="half-row"><span class="half-row-label">残業時間</span><span class="half-row-val ot" id="h1OT">-</span></div>
+        <div class="half-divider"></div>
+        <div class="half-row"><span class="half-row-label">実勤務</span><span class="half-row-val" id="h1Work">-</span></div>
+        <div class="half-row"><span class="half-row-label">　うち所定</span><span class="half-row-val" id="h1Std">-</span></div>
+        <div class="half-row"><span class="half-row-label">　うち残業</span><span class="half-row-val ot" id="h1OT">-</span></div>
       </div>
       <div class="half-card">
         <div class="half-card-title">後半（16日〜）</div>
         <div class="half-row"><span class="half-row-label">出勤日数</span><span class="half-row-val" id="h2Days">-</span></div>
-        <div class="half-row"><span class="half-row-label">勤務時間</span><span class="half-row-val" id="h2Work">-</span></div>
-        <div class="half-row"><span class="half-row-label">残業時間</span><span class="half-row-val ot" id="h2OT">-</span></div>
+        <div class="half-divider"></div>
+        <div class="half-row"><span class="half-row-label">実勤務</span><span class="half-row-val" id="h2Work">-</span></div>
+        <div class="half-row"><span class="half-row-label">　うち所定</span><span class="half-row-val" id="h2Std">-</span></div>
+        <div class="half-row"><span class="half-row-label">　うち残業</span><span class="half-row-val ot" id="h2OT">-</span></div>
       </div>
     </div>
   </div>
@@ -898,7 +903,7 @@ function render() {
   var stdH = parseFloat(document.getElementById('stdHours').value || 8);
   var rate = parseFloat(document.getElementById('hourlyRate').value || 1500);
   var totalDays = 0, totalWorkMins = 0, totalOTMins = 0, totalPay = 0;
-  var h1Days=0,h1WorkMins=0,h1OTMins=0,h2Days=0,h2WorkMins=0,h2OTMins=0;
+  var h1Days=0,h1WorkMins=0,h1OTMins=0,h1StdMins=0,h2Days=0,h2WorkMins=0,h2OTMins=0,h2StdMins=0;
   var tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
   var dowLabels = ['日','月','火','水','木','金','土'];
@@ -914,8 +919,12 @@ function render() {
     if (rec.type === 'work' && res.valid) { totalDays++; totalWorkMins += res.work; totalOTMins += res.ot; }
     if (rec.type === 'paid') { totalDays++; totalWorkMins += Math.round(stdH * 60); }
     var isFirst = d <= 15;
-    if (rec.type === 'work' && res.valid) { if(isFirst){h1Days++;h1WorkMins+=res.work;h1OTMins+=res.ot;}else{h2Days++;h2WorkMins+=res.work;h2OTMins+=res.ot;} }
-    if (rec.type === 'paid') { if(isFirst){h1Days++;h1WorkMins+=Math.round(stdH*60);}else{h2Days++;h2WorkMins+=Math.round(stdH*60);} }
+    if (rec.type === 'work' && res.valid) {
+      var stdMins = Math.min(res.work, Math.round(stdH*60));
+      if(isFirst){h1Days++;h1WorkMins+=res.work;h1OTMins+=res.ot;h1StdMins+=stdMins;}
+      else       {h2Days++;h2WorkMins+=res.work;h2OTMins+=res.ot;h2StdMins+=stdMins;}
+    }
+    if (rec.type === 'paid') { if(isFirst){h1Days++;}else{h2Days++;} }
     var payDay = rec.type === 'paid' ? rate * stdH : (res.work > 0 ? rate * (res.work / 60) : 0);
     totalPay += payDay;
     var startErr = rec.type === 'work' && rec.start && parseTime(rec.start) === null;
@@ -982,9 +991,11 @@ function render() {
   document.getElementById('otBarLabel').textContent = otLabel + ' / 45時間 (' + pct.toFixed(0) + '%)';
   document.getElementById('h1Days').textContent = h1Days + '日';
   document.getElementById('h1Work').textContent = fmtWorkTime(h1WorkMins) || '-';
+  document.getElementById('h1Std').textContent  = fmtWorkTime(h1StdMins) || '-';
   document.getElementById('h1OT').textContent   = h1OTMins > 0 ? fmtOT(h1OTMins) : '-';
   document.getElementById('h2Days').textContent = h2Days + '日';
   document.getElementById('h2Work').textContent = fmtWorkTime(h2WorkMins) || '-';
+  document.getElementById('h2Std').textContent  = fmtWorkTime(h2StdMins) || '-';
   document.getElementById('h2OT').textContent   = h2OTMins > 0 ? fmtOT(h2OTMins) : '-';
 
   renderMobile();
