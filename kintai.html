@@ -390,15 +390,15 @@
     /* 前半/後半サマリー */
     .half-summary { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; margin-bottom: 14px; }
     .half-summary-title { font-size: 12px; color: var(--text2); font-weight: 500; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-    /* 縦列テーブル: ラベル列＋前半列＋後半列 */
-    .half-table { width: 100%; border-collapse: collapse; }
-    .half-table th { font-size: 11px; color: var(--text3); font-weight: 500; padding: 0 0 8px; text-align: right; }
-    .half-table th:first-child { text-align: left; width: 40%; }
-    .half-table th:nth-child(2), .half-table th:nth-child(3) { width: 30%; }
-    .half-table td { font-size: 13px; color: var(--text); padding: 5px 0; text-align: right; white-space: nowrap; border-top: 0.5px solid var(--border); }
-    .half-table td:first-child { font-size: 11px; color: var(--text2); text-align: left; }
-    .half-table td.ot { color: var(--danger); font-weight: 500; }
-    .half-table tr.half-section-top td { border-top: none; padding-top: 8px; }
+    .half-cols { display: flex; gap: 8px; }
+    .half-label-col { flex: 0 0 auto; display: flex; flex-direction: column; gap: 0; }
+    .half-val-col { flex: 1; display: flex; flex-direction: column; gap: 0; min-width: 0; }
+    .half-col-head { font-size: 11px; color: var(--text3); font-weight: 500; padding-bottom: 6px; text-align: center; line-height: 1.4; }
+    .half-label-cell { font-size: 11px; color: var(--text2); padding: 5px 0; border-top: 0.5px solid var(--border); white-space: nowrap; line-height: 1.4; }
+    .half-val-cell { font-size: 13px; font-weight: 500; color: var(--text); padding: 5px 4px; border-top: 0.5px solid var(--border); text-align: right; white-space: nowrap; overflow: hidden; line-height: 1.4; }
+    .half-val-cell.ot { color: var(--danger); }
+    .half-first-row .half-label-cell,
+    .half-first-row .half-val-cell { border-top: none; }
   </style>
 </head>
 <body>
@@ -484,37 +484,29 @@
   <!-- 前半/後半サマリー -->
   <div class="half-summary">
     <div class="half-summary-title"><i class="ti ti-layout-columns" style="font-size:14px;"></i>前半・後半の内訳</div>
-    <table class="half-table">
-      <thead>
-        <tr>
-          <th></th>
-          <th>前半<br><span style="font-weight:400;color:var(--text3)">1〜15日</span></th>
-          <th>後半<br><span style="font-weight:400;color:var(--text3)">16日〜</span></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="half-section-top">
-          <td>出勤日数</td>
-          <td id="h1Days">-</td>
-          <td id="h2Days">-</td>
-        </tr>
-        <tr>
-          <td>有給日数</td>
-          <td id="h1Paid">-</td>
-          <td id="h2Paid">-</td>
-        </tr>
-        <tr>
-          <td>時間内</td>
-          <td id="h1Std">-</td>
-          <td id="h2Std">-</td>
-        </tr>
-        <tr>
-          <td>時間外</td>
-          <td class="ot" id="h1OT">-</td>
-          <td class="ot" id="h2OT">-</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="half-cols">
+      <div class="half-label-col">
+        <div class="half-col-head" style="visibility:hidden">-</div>
+        <div class="half-label-cell half-first-row">出勤日数</div>
+        <div class="half-label-cell">有給日数</div>
+        <div class="half-label-cell">時間内</div>
+        <div class="half-label-cell">時間外</div>
+      </div>
+      <div class="half-val-col">
+        <div class="half-col-head">前半<br><span style="font-weight:400">1〜15日</span></div>
+        <div class="half-val-cell half-first-row" id="h1Days">-</div>
+        <div class="half-val-cell" id="h1Paid">-</div>
+        <div class="half-val-cell" id="h1Std">-</div>
+        <div class="half-val-cell ot" id="h1OT">-</div>
+      </div>
+      <div class="half-val-col">
+        <div class="half-col-head">後半<br><span style="font-weight:400">16日〜</span></div>
+        <div class="half-val-cell half-first-row" id="h2Days">-</div>
+        <div class="half-val-cell" id="h2Paid">-</div>
+        <div class="half-val-cell" id="h2Std">-</div>
+        <div class="half-val-cell ot" id="h2OT">-</div>
+      </div>
+    </div>
   </div>
   <div class="card">
     <div class="bar-label">
